@@ -5,6 +5,7 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PremiumButton from "./PremiumButton";
+import { getAssetPath } from "@/lib/utils";
 
 // 注册插件
 if (typeof window !== "undefined") {
@@ -16,25 +17,25 @@ const steps = [
     id: 1,
     title: "STEP 1",
     desc: "Take a pouch out of the box",
-    image: "/images/home/bz-10001.webp",
+    image: getAssetPath("/images/home/bz-10001.webp"),
   },
   {
     id: 2,
     title: "STEP 2",
     desc: "Tuck between the upper lip and gum",
-    image: "/images/home/bz-10002.webp",
+    image: getAssetPath("/images/home/bz-10002.webp"),
   },
   {
     id: 3,
     title: "STEP 3",
     desc: "Start to feel a tingling sensation up to 30 mins",
-    image: "/images/home/bz-10003.webp",
+    image: getAssetPath("/images/home/bz-10003.webp"),
   },
   {
     id: 4,
     title: "STEP 4",
     desc: "Discard the pouch in the waste compartment",
-    image: "/images/home/bz-10004.webp",
+    image: getAssetPath("/images/home/bz-10004.webp"),
   },
 ];
 

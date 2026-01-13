@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import { getAssetPath } from "@/lib/utils";
+
 
 // Register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
@@ -24,7 +26,7 @@ interface CarouselItem {
 
 const CAROUSEL_ITEMS: CarouselItem[] = [
   {
-    image: "/images/home-carousel/slide-1.webp",
+    image: getAssetPath("/images/home-carousel/slide-1.webp"),
     title: (
       <>
         nicotine pouches
@@ -53,7 +55,7 @@ const CAROUSEL_ITEMS: CarouselItem[] = [
     imageFit: "object-contain object-right"
   },
   {
-    image: "/images/home-carousel/slide-2.webp",
+    image: getAssetPath("/images/home-carousel/slide-2.webp"),
     title: "FUTURE FUSION", 
     description: "Experience the next generation of flavor profiles, crafted for those who seek the extraordinary. A blend of tradition and innovation.",
     buttonText: "EXPLORE",

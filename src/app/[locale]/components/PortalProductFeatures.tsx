@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { getAssetPath } from "@/lib/utils";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -53,7 +54,7 @@ export default function PortalProductFeatures() {
         <div ref={imageRef} className="relative flex justify-center items-center">
              <div className="relative w-[90%] max-w-full aspect-[4/5]">
                 <Image
-                    src="/images/home/QOLA.235-1.webp"
+                    src={getAssetPath("/images/home/QOLA.235-1.webp")}
                     alt="Qola Pouches Stack"
                     fill
                     className="object-contain"

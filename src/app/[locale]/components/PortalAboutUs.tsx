@@ -3,11 +3,13 @@ import Image from "next/image";
 import { useEffect, useRef, useMemo } from "react";
 import gsap from "gsap";
 import PremiumButton from "./PremiumButton";
+import { getAssetPath } from "@/lib/utils";
+
 
 const STATIC_LOGOS = [
-  "/images/home/logo3.webp",
-  "/images/home/logo1-1.webp",
-  "/images/home/logo2.webp",
+  getAssetPath("/images/home/logo3.webp"),
+  getAssetPath("/images/home/logo1-1.webp"),
+  getAssetPath("/images/home/logo2.webp"),
 ];
 
 export default function PortalAboutUs() {
@@ -54,7 +56,7 @@ export default function PortalAboutUs() {
         {/* Left Image */}
         <div className="w-full lg:w-[26%] aspect-[4/5] relative">
           <Image
-            src="/images/home/10001.webp"
+            src={getAssetPath("/images/home/10001.webp")}
             alt="Vitanic Vision Office"
             fill
             className="object-cover"
@@ -78,7 +80,7 @@ export default function PortalAboutUs() {
         {/* Right Image */}
         <div className="w-full lg:w-[18%] aspect-square relative lg:-mb-12 lg:self-end">
           <Image
-            src="/images/home/10002.webp"
+            src={getAssetPath("/images/home/10002.webp")}
             alt="Research and Development"
             fill
             className="object-cover"
@@ -102,13 +104,13 @@ export default function PortalAboutUs() {
           {displayLogos.map((logo, index) => (
             <div key={index} className="flex-shrink-0 flex items-center">
                <div className="relative h-8 w-32">
-                 <Image
-                   src={logo}
-                   alt="Partner Logo"
-                   fill
-                   className="object-contain"
-                   priority={index < 8}
-                 />
+                  <Image
+                    src={logo}
+                    alt="Partner Logo"
+                    fill
+                    className="object-contain"
+                    priority={index < 8}
+                  />
                </div>
             </div>
           ))}

@@ -3,20 +3,21 @@ import { useState, useRef, useEffect } from "react";
 import gsap from "gsap";
 import Image from "next/image";
 import PremiumButton from "./PremiumButton";
+import { getAssetPath } from "@/lib/utils";
 
 const FLAVOR_DATA = [
-  { name: "COOL MINT(4MG)", image: "/images/home-float/COOLMINT_4MG.webp" },
-  { name: "WATERMELON SPLASH(4MG)", image: "/images/home-float/WATERMELONSPLASH_4MG.webp" },
-  { name: "STRAWBERRY SPRINKLE(4MG)", image: "/images/home-float/STRAWBERRYSPRINKLE_4MG.webp" },
-  { name: "LEMON SPARK(4MG)", image: "/images/home-float/LEMONSPARK_4MG.webp" },
-  { name: "CLASSICAL ORIGINAL(4MG)", image: "/images/home-float/CLASSICALORIGINAL_4MG.webp" },
-  { name: "COOL MINT(8MG)", image: "/images/home-float/COOLMINT_8MG.webp" },
-  { name: "CLASSICAL ORIGINAL(8MG)", image: "/images/home-float/CLASSICALORIGINAL_8MG.webp" },
-  { name: "LEMON SPARK(8MG)", image: "/images/home-float/LEMONSPARK_8MG.webp" },
-  { name: "VELVET ROSE(8MG)", image: "/images/home-float/VELVETROSE_8MG.webp" },
-  { name: "DOUBLE MINT(12MG)", image: "/images/home-float/DOUBLEMINT_12MG.webp" },
-  { name: "PEPPERMINT STORM(16MG)", image: "/images/home-float/PEPPERMINTSTORM_16MG.webp" },
-  { name: "PEPPER WHIRLWIND(20MG)", image: "/images/home-float/PEPPERMINTWHIRLWIND_20MG-1-2048x2048.webp" },
+  { name: "COOL MINT(4MG)", image: getAssetPath("/images/home-float/COOLMINT_4MG.webp") },
+  { name: "WATERMELON SPLASH(4MG)", image: getAssetPath("/images/home-float/WATERMELONSPLASH_4MG.webp") },
+  { name: "STRAWBERRY SPRINKLE(4MG)", image: getAssetPath("/images/home-float/STRAWBERRYSPRINKLE_4MG.webp") },
+  { name: "LEMON SPARK(4MG)", image: getAssetPath("/images/home-float/LEMONSPARK_4MG.webp") },
+  { name: "CLASSICAL ORIGINAL(4MG)", image: getAssetPath("/images/home-float/CLASSICALORIGINAL_4MG.webp") },
+  { name: "COOL MINT(8MG)", image: getAssetPath("/images/home-float/COOLMINT_8MG.webp") },
+  { name: "CLASSICAL ORIGINAL(8MG)", image: getAssetPath("/images/home-float/CLASSICALORIGINAL_8MG.webp") },
+  { name: "LEMON SPARK(8MG)", image: getAssetPath("/images/home-float/LEMONSPARK_8MG.webp") },
+  { name: "VELVET ROSE(8MG)", image: getAssetPath("/images/home-float/VELVETROSE_8MG.webp") },
+  { name: "DOUBLE MINT(12MG)", image: getAssetPath("/images/home-float/DOUBLEMINT_12MG.webp") },
+  { name: "PEPPERMINT STORM(16MG)", image: getAssetPath("/images/home-float/PEPPERMINTSTORM_16MG.webp") },
+  { name: "PEPPER WHIRLWIND(20MG)", image: getAssetPath("/images/home-float/PEPPERMINTWHIRLWIND_20MG-1-2048x2048.webp") },
 ];
 
 export default function PortalFlavors() {

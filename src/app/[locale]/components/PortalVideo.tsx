@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { getAssetPath } from "@/lib/utils";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -76,7 +77,7 @@ export default function PortalVideo() {
       >
         <video
           ref={videoRef}
-          src="/video/QOLA30s.mp4"
+          src={getAssetPath("/video/QOLA30s.mp4")}
           className="w-full h-full object-cover"
           playsInline
           muted

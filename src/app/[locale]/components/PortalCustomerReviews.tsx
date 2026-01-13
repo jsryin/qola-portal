@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PremiumButton from "./PremiumButton";
+import { getAssetPath } from "@/lib/utils";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -158,7 +159,7 @@ export default function PortalCustomerReviews() {
         muted
         playsInline
       >
-        <source src="/video/custom_review_bg.mp4" type="video/mp4" />
+        <source src={getAssetPath("/video/custom_review_bg.mp4")} type="video/mp4" />
       </video>
 
       {/* Marquee Header */}

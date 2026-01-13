@@ -4,6 +4,7 @@ import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PremiumButton from "./PremiumButton";
+import { getAssetPath } from "@/lib/utils";
 
 // 注册 GSAP 插件
 if (typeof window !== "undefined") {
@@ -96,7 +97,7 @@ export default function PortalDidYouKnow() {
         <div className="flex flex-col max-w-[420px] w-full">
           <div className="relative group w-full aspect-square overflow-hidden bg-gray-100 rounded-lg">
             <Image
-              src="/images/home/66-1_1024x1024.webp"
+              src={getAssetPath("/images/home/66-1_1024x1024.webp")}
               alt="New to nicotine pouches"
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -128,7 +129,7 @@ export default function PortalDidYouKnow() {
         <div className="flex flex-col max-w-[420px] w-full">
           <div className="relative group w-full aspect-square overflow-hidden bg-gray-100 rounded-lg">
             <Image
-              src="/images/home/63-1-1024x1024.webp"
+              src={getAssetPath("/images/home/63-1-1024x1024.webp")}
               alt="Using nicotine pouches"
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"

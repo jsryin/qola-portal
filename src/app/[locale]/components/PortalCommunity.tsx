@@ -5,16 +5,17 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PremiumButton from "./PremiumButton";
+import { getAssetPath } from "@/lib/utils";
 
 // Register ScrollTrigger if not already done globally, but safe to call multiple times
 gsap.registerPlugin(ScrollTrigger);
 
 const communityImages = [
-  "/images/home/58.webp",
-  "/images/home/59.webp",
-  "/images/home/60.webp",
-  "/images/home/61.webp",
-  "/images/home/62.webp",
+  getAssetPath("/images/home/58.webp"),
+  getAssetPath("/images/home/59.webp"),
+  getAssetPath("/images/home/60.webp"),
+  getAssetPath("/images/home/61.webp"),
+  getAssetPath("/images/home/62.webp"),
 ];
 
 export default function PortalCommunity() {

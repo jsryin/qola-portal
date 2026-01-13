@@ -3,19 +3,20 @@ import Image from "next/image";
 import { useEffect, useRef, useMemo } from "react";
 import gsap from "gsap";
 import PremiumButton from "./PremiumButton";
+import { getAssetPath } from "@/lib/utils";
 
 // 将静态数据移到组件外，避免重复创建
 const IMAGES = [
-  "/images/home-midcar/10003.webp",
-  "/images/home-midcar/10004.webp",
-  "/images/home-midcar/10005.webp",
-  "/images/home-midcar/10006.webp",
-  "/images/home-midcar/10007.webp",
-  "/images/home-midcar/10008.webp",
-  "/images/home-midcar/10009.webp",
-  "/images/home-midcar/10010.webp",
-  "/images/home-midcar/10011.webp",
-  "/images/home-midcar/10012.webp",
+  getAssetPath("/images/home-midcar/10003.webp"),
+  getAssetPath("/images/home-midcar/10004.webp"),
+  getAssetPath("/images/home-midcar/10005.webp"),
+  getAssetPath("/images/home-midcar/10006.webp"),
+  getAssetPath("/images/home-midcar/10007.webp"),
+  getAssetPath("/images/home-midcar/10008.webp"),
+  getAssetPath("/images/home-midcar/10009.webp"),
+  getAssetPath("/images/home-midcar/10010.webp"),
+  getAssetPath("/images/home-midcar/10011.webp"),
+  getAssetPath("/images/home-midcar/10012.webp"),
 ];
 
 export default function PortalUsageScenarios() {
