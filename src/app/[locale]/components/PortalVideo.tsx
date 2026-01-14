@@ -69,7 +69,7 @@ export default function PortalVideo() {
   return (
     <section
       ref={containerRef}
-      className="relative w-full z-10 flex flex-col items-center justify-start -mt-10 overflow-hidden shadow-2xl pointer-events-none"
+      className="relative w-full z-10 flex flex-col items-center justify-start overflow-hidden shadow-2xl pointer-events-none"
     >
       <div
         ref={wrapperRef}

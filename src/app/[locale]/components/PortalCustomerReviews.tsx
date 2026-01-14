@@ -183,13 +183,12 @@ export default function PortalCustomerReviews() {
       {/* Reviews Grid */}
       <div 
         ref={reviewsContainerRef}
-        className="relative z-10 w-full max-w-[1400px] px-8 flex flex-col items-center justify-center gap-4" // base gap small
+        className="relative z-10 w-full max-w-[1400px] px-8 flex flex-col items-center justify-center gap-2" // base gap small
       >
         {/* Top Row */}
         <div 
             ref={topRowRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full translate-y-[50px]" // Start pushed down (overlapped)
-            style={{ marginBottom: '-100px' }} // Start overlapped with bottom
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full"
         >
             {REVIEWS.slice(0, 4).map((review, idx) => (
                 <ReviewCard key={`top-${idx}`} review={review} />
@@ -199,7 +198,7 @@ export default function PortalCustomerReviews() {
         {/* Bottom Row */}
         <div 
             ref={bottomRowRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full translate-y-[0px] -rotate-[2deg] origin-center"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full translate-y-[0px] origin-center"
         >
              {REVIEWS.slice(4, 8).map((review, idx) => (
                 <ReviewCard key={`bottom-${idx}`} review={review} />

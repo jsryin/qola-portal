@@ -6,8 +6,11 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Portal - Premium Experience",
-  description: "A showcase of modern web design.",
+  title: "QOLA｜QOLA Mall",
+  description: "QOLA",
+  icons: {
+    icon: { url: "/logo-100x100.webp", type: "image/webp" },
+  },
 };
 
 export default function RootLayout({
