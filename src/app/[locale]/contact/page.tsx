@@ -10,13 +10,7 @@ export const metadata: Metadata = {
   description: "Get in touch with our team via email or phone.",
 };
 
-export function generateStaticParams() {
-  return [
-    { locale: "en-my" },
-    { locale: "zh-my" },
-    { locale: "en-ae" },
-  ];
-}
+
 
 interface ContactItem {
   region: string;

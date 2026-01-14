@@ -153,7 +153,7 @@ export default function PortalFooter() {
   return (
     <footer ref={containerRef} className="relative w-full overflow-hidden font-sans">
       {/* Top Section: Ready to build something impactful? */}
-      <div className="bg-gray-50 py-8 md:py-10 px-6 md:px-12 lg:px-16">
+      {/* <div className="bg-gray-50 py-8 md:py-10 px-6 md:px-12 lg:px-16">
         <div className="max-w-[1920px] mx-auto">
           <h2 
             ref={impactfulTextRef}
@@ -170,7 +170,7 @@ export default function PortalFooter() {
             </span>
           </h2>
         </div>
-      </div>
+      </div> */}
 
       {/* Middle Section: Main Footer Content */}
       <div className="bg-[#191919] text-white py-8 md:py-10 px-6 md:px-12 lg:px-16">
@@ -215,19 +215,23 @@ export default function PortalFooter() {
           <div className="md:col-span-3">
             <h3 className="text-xs text-gray-500 mb-8 font-semibold tracking-widest uppercase">( Navigate )</h3>
             <ul className="flex flex-col gap-y-1 group/nav">
-              {NAV_LINKS.map((item, index) => (
-                <li key={item}>
-                  <Link 
-                    href={item === 'Home' ? `/${locale}` : `/${locale}/${item.toLowerCase()}`} 
-                    className={`text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter transition-colors inline-block 
-                      ${index === 0 
-                        ? 'text-white group-hover/nav:text-gray-500 hover:!text-white' 
-                        : 'text-gray-500 hover:text-white'}`}
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
+              {NAV_LINKS.map((item, index) => {
+                const isDisabled = ['Products', 'Shop'].includes(item);
+                return (
+                  <li key={item}>
+                    <Link 
+                      href={isDisabled ? '#' : (item === 'Home' ? `/${locale}` : `/${locale}/${item.toLowerCase()}`)} 
+                      onClick={isDisabled ? (e) => e.preventDefault() : undefined}
+                      className={`text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter transition-colors inline-block 
+                        ${index === 0 
+                          ? 'text-white group-hover/nav:text-gray-500 hover:!text-white' 
+                          : 'text-gray-500 hover:text-white'}`}
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

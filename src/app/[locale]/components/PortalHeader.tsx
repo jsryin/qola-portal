@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, memo } from "react";
+import Link from 'next/link';
+import { useParams } from "next/navigation";
 
 const NAV_ITEMS = [
   { label: 'Home', path: '' },
@@ -11,7 +13,7 @@ const NAV_ITEMS = [
 ];
 
 const MOBILE_SHORTCUTS = ['Home', 'Shop'];
-
+const DISABLED_ITEMS = ['Products', 'Shop'];
 
 interface NavLinkProps {
   label: string;
@@ -22,47 +24,43 @@ interface NavLinkProps {
 
 // 提取并使用 memo 优化，避免不必要的重新渲染
 const NavLink = memo(({ label, href, className = "", onClick }: NavLinkProps) => (
-  <a
+  <Link
     href={href}
     className={`relative py-1 group transition-opacity ${className}`}
-    onClick={onClick || ((e) => e.preventDefault())}
+    onClick={onClick}
   >
     {label}
     <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-current group-hover:w-full transition-all duration-300 ease-out"></span>
-  </a>
+  </Link>
 ));
 
 NavLink.displayName = "NavLink";
 
-import { useParams } from "next/navigation";
-
-// ... (NavLink component remains effectively the same, just receiving href)
-
 export default function PortalHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const params = useParams();
-  const locale = params?.locale as string || 'en-my'; // Default fallback
+  const locale = params?.locale as string || 'en-glo'; // Default fallback
 
   // Dynamically generate links based on locale
   const navLinks = NAV_ITEMS.map(item => ({
     label: item.label,
-    href: item.label === 'Home' ? `/${locale}` : `/${locale}/${item.path}`
+    href: DISABLED_ITEMS.includes(item.label) ? '#' : (item.label === 'Home' ? `/${locale}` : `/${locale}/${item.path}`)
   }));
 
   const mobileNavLinks = navLinks.filter(link => MOBILE_SHORTCUTS.includes(link.label));
 
   // 使用稳定的函数引用
   const toggleMenu = () => setIsMenuOpen(prev => !prev);
-  const handleOverlayLinkClick = (e: React.MouseEvent) => {
-     // Check if it's a hash link, if so prevent default. 
-     // If it is a page navigation, we might want to let it happen.
-     // The original code had e.preventDefault() which stops navigation.
-     // We should only prevent default if we are handling navigation manually or if it's anchor scroll.
-     // Since these are page transitions, we should probably Allow navigation but close menu.
-     // However, for consistency with original code which seemed to be WIP (href='#'), 
-     // I will remove e.preventDefault() for real links so they navigate.
-     // But wait, the original code had `onClick={handleOverlayLinkClick}` which did `e.preventDefault()`.
-     // Correct behavior: Close menu, then navigate.
+  
+  const handleDisabledClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
+  const handleOverlayLinkClick = (e: React.MouseEvent, label: string) => {
+     if (DISABLED_ITEMS.includes(label)) {
+        e.preventDefault();
+        return;
+     }
      setIsMenuOpen(false);
   };
 
@@ -76,7 +74,11 @@ export default function PortalHeader() {
         {/* 桌面端导航 */}
         <nav className={`hidden md:flex gap-10 text-sm tracking-[0.2em] uppercase font-medium items-center absolute left-1/2 -translate-x-1/2 transition-opacity duration-500 ${isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           {navLinks.map((link) => (
-            <NavLink key={link.label} {...link} />
+            <NavLink 
+              key={link.label} 
+              {...link} 
+              onClick={DISABLED_ITEMS.includes(link.label) ? handleDisabledClick : undefined}
+            />
           ))}
         </nav>
 
@@ -84,7 +86,11 @@ export default function PortalHeader() {
         {/* 移动端快捷导航 */}
         <nav className={`flex md:hidden gap-5 text-sm uppercase tracking-[0.2em] font-medium items-center absolute left-1/2 -translate-x-1/2 transition-opacity duration-500 ${isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           {mobileNavLinks.map((link) => (
-            <NavLink key={link.label} {...link} />
+            <NavLink 
+              key={link.label} 
+              {...link} 
+              onClick={DISABLED_ITEMS.includes(link.label) ? handleDisabledClick : undefined}
+            />
           ))}
         </nav>
 
@@ -115,15 +121,15 @@ export default function PortalHeader() {
       >
         <nav className={`flex flex-col items-center gap-8 text-3xl md:text-5xl font-serif text-[#FAF7F2] [perspective:1000px] transition-all duration-500 delay-300 ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {navLinks.map((link) => (
-            <a 
+            <Link 
               key={link.label}
               href={link.href} 
               className="relative group py-2" 
-              onClick={handleOverlayLinkClick}
+              onClick={(e) => handleOverlayLinkClick(e, link.label)}
             >
               {link.label}
               <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-current group-hover:w-full transition-all duration-300 ease-out"></span>
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
