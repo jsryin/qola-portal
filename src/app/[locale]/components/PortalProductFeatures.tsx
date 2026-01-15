@@ -65,7 +65,7 @@ export default function PortalProductFeatures() {
 
         {/* Right: Features List */}
         <div ref={textRef} className="flex flex-col space-y-8 text-stone-900 justify-center">
-             <ul className="space-y-6 text-2xl md:text-3xl font-medium tracking-wide">
+             <ul className="space-y-6 text-2xl md:text-3xl font-bold tracking-wide">
                 <li className="flex items-center">
                     <span>20 pouches</span>
                 </li>
