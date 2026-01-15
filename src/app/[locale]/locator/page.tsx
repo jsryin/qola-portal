@@ -9,13 +9,7 @@ export const metadata: Metadata = {
   description: "Find a QOLA store near you.",
 };
 
-
-
-export default function LocatorPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function LocatorPage() {
   return (
     <div className="relative bg-white min-h-screen text-stone-900 font-sans">
       <MouseFollower />
