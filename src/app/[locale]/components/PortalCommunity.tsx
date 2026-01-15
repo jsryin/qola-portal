@@ -152,13 +152,6 @@ export default function PortalCommunity() {
                       className="object-cover"
                       sizes="(max-width: 768px) 60vw, 25vw"
                      />
-                     
-                     {/* Overlay Text - Matching the reference image style */}
-                     <div className="absolute bottom-4 left-0 w-full text-center">
-                       <span className="text-orange-400 text-xs md:text-sm font-semibold tracking-widest uppercase">
-                         QOLA
-                       </span>
-                     </div>
                   </div>
                 </div>
              ))}
