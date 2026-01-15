@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   description: "Find a QOLA store near you.",
 };
 
-export const runtime = 'edge';
+export const dynamicParams = false;
+export const dynamic = "force-static";
 
 export default function LocatorPage() {
   return (

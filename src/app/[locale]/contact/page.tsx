@@ -13,7 +13,8 @@ export const metadata: Metadata = {
 
 
 
-export const runtime = 'edge';
+export const dynamicParams = false;
+export const dynamic = "force-static";
 
 interface ContactItem {
   region: string;
