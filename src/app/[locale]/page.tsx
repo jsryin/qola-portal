@@ -2,6 +2,7 @@ import { use } from "react";
 import ClientPortal from "./ClientPortal";
 
 
+export const runtime = "edge";
 export const dynamicParams = false;
 export const dynamic = "force-static";
 
