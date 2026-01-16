@@ -43,7 +43,7 @@ export async function query<T extends RowDataPacket[]>(
   params?: unknown[]
 ): Promise<T> {
   const connection = getPool();
-  const [rows] = await connection.execute<T>(sql, params);
+  const [rows] = await connection.query<T>(sql, params);
   return rows;
 }
 

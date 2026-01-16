@@ -386,4 +386,51 @@ export class CmsHelper {
 
     return page.draft_content as PuckData;
   }
+  /**
+   * 搜索页面
+   */
+  static async searchPages(
+    keyword: string,
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<{
+    data: CmsPage[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  }> {
+    let whereClause = "WHERE is_deleted = 0";
+    const params: unknown[] = [];
+
+    if (keyword) {
+      whereClause += " AND (title LIKE ? OR slug LIKE ?)";
+      params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+
+    const offset = (page - 1) * pageSize;
+
+    // Count
+    const countSql = `SELECT COUNT(*) as total FROM cms_page ${whereClause}`;
+    const countResult = await cmsPageRepository.rawQuery<({ total: number } & import('@/lib/db/connection').RowDataPacket)[]>(countSql, params);
+    const total = countResult[0]?.total || 0;
+
+    // Data
+    const dataSql = `SELECT * FROM cms_page ${whereClause} ORDER BY updated_time DESC LIMIT ? OFFSET ?`;
+    // MySQL LIMIT/OFFSET expects integers, safe to push directly or rely on driver
+    // Note: tidb/mysql driver usually handles numbers correctly in parameterized queries
+    const dataParams = [...params, pageSize, offset];
+    
+    // cast result to CmsPage[] 
+    // rawQuery returns generic RowDataPacket[], we assert it
+    const data = await cmsPageRepository.rawQuery<(CmsPage & import('@/lib/db/connection').RowDataPacket)[]>(dataSql, dataParams);
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
 }
