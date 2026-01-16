@@ -6,18 +6,6 @@
 import { createRepository } from '@/lib/db';
 
 /**
- * 页面状态枚举
- */
-export enum CmsPageStatus {
-  /** 草稿 */
-  DRAFT = 0,
-  /** 已发布 */
-  PUBLISHED = 1,
-  /** 下架 */
-  OFFLINE = 2,
-}
-
-/**
  * CMS 页面实体接口
  */
 export interface CmsPage {
@@ -30,10 +18,12 @@ export interface CmsPage {
   draft_content?: Record<string, unknown> | null;
   /** 当前生效的线上版本ID(关联version表) */
   published_version_id?: number | null;
-  /** 状态: 0-草稿, 1-已发布, 2-下架 */
-  status?: CmsPageStatus;
+  /** 最近发布时间 */
+  published_time?: Date | null;
   /** 版本号计数器(用于生成下个版本号) */
   version_counter?: number;
+  /** 是否删除: 0-否, 1-是 */
+  is_deleted?: number;
   /** 创建人 */
   created_by?: string | null;
   /** 更新人 */
