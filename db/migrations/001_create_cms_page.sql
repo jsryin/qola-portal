@@ -3,7 +3,7 @@
 
 CREATE TABLE `cms_page` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `page_key` VARCHAR(64) NOT NULL COMMENT '页面唯一标识(URL路径或业务Key)',
+  `slug` VARCHAR(64) NOT NULL COMMENT '页面唯一标识(URL路径或业务Key)',
   `title` VARCHAR(100) NOT NULL COMMENT '页面标题',
   
   -- 核心字段：热草稿
@@ -26,7 +26,7 @@ CREATE TABLE `cms_page` (
   `updated_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_page_key` (`page_key`),
+  UNIQUE KEY `uk_slug` (`slug`),
   KEY `idx_is_deleted` (`is_deleted`),
   KEY `idx_published_version` (`published_version_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='可视化页面元数据表';

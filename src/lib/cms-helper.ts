@@ -48,46 +48,86 @@ export class CmsHelper {
 
   /**
    * 保存草稿
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    * @param content Puck JSON 数据
    * @param userId 用户ID
+   * @param title 页面标题
+   * @param newSlug 新的页面标识（可选，用于修改 slug）
    */
   static async saveDraft(
-    pageKey: string,
+    slug: string,
     content: PuckData,
-    userId?: string
+    userId?: string,
+    title?: string,
+    newSlug?: string
   ): Promise<void> {
-    const page = await cmsPageRepository.findOne({ page_key: pageKey });
+    const page = await cmsPageRepository.findOne({ slug });
     
     if (!page) {
-      throw new Error(`页面不存在: ${pageKey}`);
+      // 如果页面不存在，且提供了 newSlug，先检查 newSlug 是否已被使用
+      if (newSlug && newSlug !== slug) {
+        const existingPage = await cmsPageRepository.findOne({ slug: newSlug });
+        if (existingPage) {
+          throw new Error(`Slug "${newSlug}" 已被其他页面使用`);
+        }
+      }
+
+      // 创建新页面
+      await cmsPageRepository.create({
+        slug: newSlug || slug,
+        title: title || slug,
+        draft_content: JSON.stringify(content),
+        created_by: userId,
+        updated_by: userId,
+        version_counter: 1,
+        is_deleted: 0,
+      });
+      return;
+    }
+
+    // 已存在页面，构建更新数据
+    const updateData: Partial<CmsPage> = {
+      draft_content: JSON.stringify(content),
+      updated_by: userId,
+      updated_time: new Date(),
+    };
+
+    // 如果提供了 title，则更新
+    if (title !== undefined) {
+      updateData.title = title;
+    }
+
+    // 如果提供了 newSlug 且与当前 slug 不同，则更新 slug
+    if (newSlug !== undefined && newSlug !== slug) {
+      // 检查新的 newSlug 是否已被使用
+      const existingPage = await cmsPageRepository.findOne({ slug: newSlug });
+      if (existingPage && existingPage.id !== page.id) {
+        throw new Error(`Slug "${newSlug}" 已被其他页面使用`);
+      }
+      updateData.slug = newSlug;
     }
 
     await cmsPageRepository.update(
       { id: page.id },
-      {
-        draft_content: content,
-        updated_by: userId,
-        updated_time: new Date(),
-      }
+      updateData
     );
   }
 
   /**
    * 发布页面
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    * @param userId 用户ID
    * @param remark 版本备注
    */
   static async publishPage(
-    pageKey: string,
+    slug: string,
     userId?: string,
     remark?: string
   ): Promise<number> {
-    const page = await cmsPageRepository.findOne({ page_key: pageKey });
+    const page = await cmsPageRepository.findOne({ slug });
     
     if (!page) {
-      throw new Error(`页面不存在: ${pageKey}`);
+      throw new Error(`页面不存在: ${slug}`);
     }
 
     if (!page.draft_content) {
@@ -98,7 +138,9 @@ export class CmsHelper {
     const newVersion = {
       page_id: page.id!,
       version_num: page.version_counter || 1,
-      content: page.draft_content as Record<string, unknown>,
+      content: typeof page.draft_content === 'string' 
+        ? page.draft_content 
+        : JSON.stringify(page.draft_content),
       is_published: 1,
       published_time: new Date(),
       created_by: userId,
@@ -131,19 +173,19 @@ export class CmsHelper {
 
   /**
    * 回滚到指定版本
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    * @param versionNum 版本号
    * @param userId 用户ID
    */
   static async rollbackToVersion(
-    pageKey: string,
+    slug: string,
     versionNum: number,
     userId?: string
   ): Promise<void> {
-    const page = await cmsPageRepository.findOne({ page_key: pageKey });
+    const page = await cmsPageRepository.findOne({ slug });
     
     if (!page) {
-      throw new Error(`页面不存在: ${pageKey}`);
+      throw new Error(`页面不存在: ${slug}`);
     }
 
     const version = await cmsPageVersionRepository.findOne({
@@ -159,7 +201,9 @@ export class CmsHelper {
     await cmsPageRepository.update(
       { id: page.id },
       {
-        draft_content: version.content,
+        draft_content: typeof version.content === 'string'
+          ? version.content
+          : JSON.stringify(version.content),
         updated_by: userId,
         updated_time: new Date(),
       }
@@ -168,17 +212,17 @@ export class CmsHelper {
 
   /**
    * 获取页面的版本历史
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    * @param includeDeleted 是否包含已删除的版本
    */
   static async getVersionHistory(
-    pageKey: string,
+    slug: string,
     includeDeleted = false
   ): Promise<CmsPageVersion[]> {
-    const page = await cmsPageRepository.findOne({ page_key: pageKey });
+    const page = await cmsPageRepository.findOne({ slug });
     
     if (!page) {
-      throw new Error(`页面不存在: ${pageKey}`);
+      throw new Error(`页面不存在: ${slug}`);
     }
 
     const where: Partial<CmsPageVersion> = { page_id: page.id! };
@@ -195,14 +239,14 @@ export class CmsHelper {
 
   /**
    * 软删除页面
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    * @param userId 用户ID
    */
-  static async deletePage(pageKey: string, userId?: string): Promise<void> {
-    const page = await cmsPageRepository.findOne({ page_key: pageKey });
+  static async deletePage(slug: string, userId?: string): Promise<void> {
+    const page = await cmsPageRepository.findOne({ slug });
     
     if (!page) {
-      throw new Error(`页面不存在: ${pageKey}`);
+      throw new Error(`页面不存在: ${slug}`);
     }
 
     await cmsPageRepository.update(
@@ -217,14 +261,14 @@ export class CmsHelper {
 
   /**
    * 恢复已删除的页面
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    * @param userId 用户ID
    */
-  static async restorePage(pageKey: string, userId?: string): Promise<void> {
-    const page = await cmsPageRepository.findOne({ page_key: pageKey });
+  static async restorePage(slug: string, userId?: string): Promise<void> {
+    const page = await cmsPageRepository.findOne({ slug });
     
     if (!page) {
-      throw new Error(`页面不存在: ${pageKey}`);
+      throw new Error(`页面不存在: ${slug}`);
     }
 
     await cmsPageRepository.update(
@@ -239,19 +283,19 @@ export class CmsHelper {
 
   /**
    * 软删除版本
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    * @param versionNum 版本号
    * @param userId 用户ID
    */
   static async deleteVersion(
-    pageKey: string,
+    slug: string,
     versionNum: number,
     userId?: string
   ): Promise<void> {
-    const page = await cmsPageRepository.findOne({ page_key: pageKey });
+    const page = await cmsPageRepository.findOne({ slug });
     
     if (!page) {
-      throw new Error(`页面不存在: ${pageKey}`);
+      throw new Error(`页面不存在: ${slug}`);
     }
 
     const version = await cmsPageVersionRepository.findOne({
@@ -280,13 +324,13 @@ export class CmsHelper {
 
   /**
    * 获取已发布的页面内容
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    */
   static async getPublishedContent(
-    pageKey: string
+    slug: string
   ): Promise<PuckData | null> {
     const page = await cmsPageRepository.findOne({ 
-      page_key: pageKey,
+      slug,
       is_deleted: 0,
     });
     
@@ -299,21 +343,47 @@ export class CmsHelper {
       is_deleted: 0,
     });
 
-    return (version?.content as PuckData) || null;
+    if (!version || !version.content) {
+      return null;
+    }
+
+    if (typeof version.content === 'string') {
+      try {
+        return JSON.parse(version.content) as PuckData;
+      } catch (e) {
+        console.error('Failed to parse published content:', e);
+        return null;
+      }
+    }
+
+    return version.content as PuckData;
   }
 
   /**
    * 获取草稿内容
-   * @param pageKey 页面唯一标识
+   * @param slug 页面唯一标识
    */
   static async getDraftContent(
-    pageKey: string
+    slug: string
   ): Promise<PuckData | null> {
     const page = await cmsPageRepository.findOne({ 
-      page_key: pageKey,
+      slug,
       is_deleted: 0,
     });
     
-    return (page?.draft_content as PuckData) || null;
+    if (!page || !page.draft_content) {
+      return null;
+    }
+
+    if (typeof page.draft_content === 'string') {
+      try {
+        return JSON.parse(page.draft_content) as PuckData;
+      } catch (e) {
+        console.error('Failed to parse draft content:', e);
+        return null;
+      }
+    }
+
+    return page.draft_content as PuckData;
   }
 }

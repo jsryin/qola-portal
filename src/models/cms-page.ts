@@ -11,11 +11,11 @@ import { createRepository } from '@/lib/db';
 export interface CmsPage {
   id?: number;
   /** 页面唯一标识(URL路径或业务Key) */
-  page_key: string;
+  slug: string;
   /** 页面标题 */
   title: string;
   /** 当前编辑态的JSON数据(Puck Data) */
-  draft_content?: Record<string, unknown> | null;
+  draft_content?: Record<string, unknown> | string | null;
   /** 当前生效的线上版本ID(关联version表) */
   published_version_id?: number | null;
   /** 最近发布时间 */

@@ -1,10 +1,31 @@
 import type { Config, Data } from "@puckeditor/core";
+import type { ReactNode } from "react";
 
 /**
  * Puck 组件配置
  * 在这里定义可用的编辑器组件
  */
 export const puckConfig: Config = {
+  // Root 字段配置（右侧边栏的 Page 区域）
+  root: {
+    fields: {
+      title: { 
+        type: "text", 
+        label: "Title",
+      },
+      slug: { 
+        type: "text", 
+        label: "Slug *",
+      },
+    },
+    defaultProps: {
+      title: "",
+      slug: "",
+    },
+    render: ({ children }: { children: ReactNode }) => {
+      return <>{children}</>;
+    },
+  },
   components: {
     // 标题组件
     Heading: {
@@ -134,8 +155,13 @@ export const puckConfig: Config = {
 /**
  * 初始数据
  */
-export const initialData: Data = {
-  root: {},
+export const initialData = {
+  root: {
+    props: {
+      title: "",
+      slug: "",
+    },
+  },
   content: [],
   zones: {},
-};
+} as Data;

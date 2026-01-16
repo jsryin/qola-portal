@@ -15,7 +15,7 @@ export interface CmsPageVersion {
   /** 版本号(如: 1, 2, 3) */
   version_num: number;
   /** 该版本固化的JSON数据 */
-  content: Record<string, unknown>;
+  content: Record<string, unknown> | string;
   /** 是否为已发布版本: 0-否, 1-是 */
   is_published?: number;
   /** 发布时间 */
