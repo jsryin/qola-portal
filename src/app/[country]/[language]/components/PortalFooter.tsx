@@ -22,7 +22,14 @@ const SOCIAL_LINKS = [
 
 export default function PortalFooter() {
   const params = useParams();
-  const locale = params.locale;
+  // 获取 country 和 language 参数，设置默认值
+  const rawCountry = params?.country;
+  const rawLanguage = params?.language;
+  const country = (Array.isArray(rawCountry) ? rawCountry[0] : rawCountry) || 'glo';
+  const language = (Array.isArray(rawLanguage) ? rawLanguage[0] : rawLanguage) || 'en';
+  // 基于 country 和 language 生成基础路径
+  const basePath = `/${country}/${language}`;
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const impactfulTextRef = useRef<HTMLHeadingElement>(null);
   const wavyRef = useRef<HTMLDivElement>(null);
@@ -223,7 +230,7 @@ export default function PortalFooter() {
                 return (
                   <li key={item}>
                     <Link 
-                      href={isDisabled ? '#' : (item === 'Home' ? `/${locale}` : `/${locale}/${item.toLowerCase()}`)} 
+                      href={isDisabled ? '#' : (item === 'Home' ? basePath : `${basePath}/${item.toLowerCase()}`)} 
                       onClick={isDisabled ? (e) => e.preventDefault() : undefined}
                       className={`text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter transition-colors inline-block 
                         ${index === 0 

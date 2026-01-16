@@ -46,14 +46,17 @@ export default function PortalHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const params = useParams();
   
-  // 优化参数获取的健壮性，处理可能的数组情况
-  const rawLocale = params?.locale;
-  const locale = (Array.isArray(rawLocale) ? rawLocale[0] : rawLocale) || 'en-glo';
+  // 获取 country 和 language 参数，设置默认值
+  const rawCountry = params?.country;
+  const rawLanguage = params?.language;
+  const country = (Array.isArray(rawCountry) ? rawCountry[0] : rawCountry) || 'glo';
+  const language = (Array.isArray(rawLanguage) ? rawLanguage[0] : rawLanguage) || 'en';
 
-  // Dynamically generate links based on locale
+  // 基于 country 和 language 动态生成链接
+  const basePath = `/${country}/${language}`;
   const navLinks = NAV_ITEMS.map(item => ({
     label: item.label,
-    href: DISABLED_ITEMS.includes(item.label) ? '#' : (item.label === 'Home' ? `/${locale}` : `/${locale}/${item.path}`)
+    href: DISABLED_ITEMS.includes(item.label) ? '#' : (item.label === 'Home' ? basePath : `${basePath}/${item.path}`)
   }));
 
   const mobileNavLinks = navLinks.filter(link => MOBILE_SHORTCUTS.includes(link.label));
@@ -156,5 +159,3 @@ export default function PortalHeader() {
     </>
   );
 }
-
-
