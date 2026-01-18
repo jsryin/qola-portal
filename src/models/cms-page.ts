@@ -12,6 +12,10 @@ export interface CmsPage {
   id?: number;
   /** 页面唯一标识(URL路径或业务Key) */
   slug: string;
+  /** 国家简称(如: ae, sa, cn, glo=global) */
+  country_code?: string;
+  /** 主语言/默认语言(如: en, ar, zh) */
+  language_code?: string;
   /** 页面标题 */
   title: string;
   /** 当前编辑态的JSON数据(Puck Data) */

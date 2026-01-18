@@ -12,6 +12,10 @@ export interface CmsPageVersion {
   id?: number;
   /** 关联主表ID */
   page_id: number;
+  /** 国家简称 */
+  country_code?: string;
+  /** 语言代码 */
+  language_code?: string;
   /** 版本号(如: 1, 2, 3) */
   version_num: number;
   /** 该版本固化的JSON数据 */

@@ -4,11 +4,27 @@ import { Puck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import "../puck.css";
 import { puckConfig, initialData } from "@/lib/puck";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo, useRef } from "react";
+import type { ReactNode } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
 import { CmsPageVersion } from "@/models";
+import {
+  DEFAULT_COUNTRY,
+  DEFAULT_LANGUAGE,
+  COUNTRIES,
+  // LANGUAGES, // Not strictly needed if we use getSupportedLanguages which returns objects
+  getSupportedLanguages
+} from "@/config/locales";
+
+interface PuckRootProps {
+  title?: string;
+  slug?: string;
+  country?: string;
+  language?: string;
+  [key: string]: any;
+}
 
 /**
  * Puck 编辑器客户端组件
@@ -18,7 +34,9 @@ export default function PuckEditor() {
   const router = useRouter();
   const pathname = usePathname();
   const slug = searchParams.get("slug") || "home"; // 默认编辑 home 页面
-  
+  const country = searchParams.get("country") || DEFAULT_COUNTRY;
+  const language = searchParams.get("language") || DEFAULT_LANGUAGE;
+
   const [data, setData] = useState<Data>(initialData);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -32,31 +50,73 @@ export default function PuckEditor() {
   // 加载草稿内容
   useEffect(() => {
     const loadDraft = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/cms/load-draft?slug=${slug}`);
+        const response = await fetch(
+          `/api/cms/load-draft?slug=${slug}&country=${country}&language=${language}`,
+          { signal: controller.signal }
+        );
+
+        if (response.status === 404) {
+          // 如果页面不存在 (404)，说明是新增页面
+          setIsLoading(false);
+          const newInitialData = JSON.parse(JSON.stringify(initialData));
+          newInitialData.root.props.slug = slug;
+          newInitialData.root.props.country = country;
+          newInitialData.root.props.language = language;
+          setData(newInitialData);
+          return;
+        }
+
+        if (!response.ok) throw new Error(response.statusText);
+
         const result = await response.json();
 
         if (result.success && result.content) {
           setData(result.content);
         } else {
-          // 如果没有草稿，使用初始数据
-          console.log("未找到草稿，使用初始数据");
+          // 如果没有草稿，使用初始数据，并注入当前参数
+          const newInitialData = JSON.parse(JSON.stringify(initialData));
+          newInitialData.root.props.slug = slug;
+          newInitialData.root.props.country = country;
+          newInitialData.root.props.language = language;
+          setData(newInitialData);
         }
       } catch (error) {
         console.error("加载草稿失败:", error);
-        showToast("加载草稿失败，使用初始数据", "error");
+        if ((error as Error).name === 'AbortError') {
+          showToast("加载超时，已切换到离线模式", "error");
+        } else {
+          showToast("加载草稿失败，使用初始数据", "error");
+        }
+        // 出错时也必须设置初始数据
+        const newInitialData = JSON.parse(JSON.stringify(initialData));
+        newInitialData.root.props.slug = slug;
+        newInitialData.root.props.country = country;
+        newInitialData.root.props.language = language;
+        setData(newInitialData);
       } finally {
+        clearTimeout(timeoutId);
         setIsLoading(false);
       }
     };
 
     loadDraft();
-  }, [slug, showToast]);
+  }, [slug, country, language, showToast]);
+
+  // 使用 Ref 存储 data，避免 handleSave 频繁变更导致 overrides 重渲染
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   // 数据变更回调
   const handleChange = useCallback((changeData: Data) => {
     setData(changeData);
+    dataRef.current = changeData;
   }, []);
 
   // 保存草稿回调
@@ -65,6 +125,7 @@ export default function PuckEditor() {
 
     try {
       setIsSaving(true);
+      const currentData = dataRef.current;
       const response = await fetch("/api/cms/save-draft", {
         method: "POST",
         headers: {
@@ -72,8 +133,14 @@ export default function PuckEditor() {
         },
         body: JSON.stringify({
           slug,
-          content: data,
+          country: (currentData.root?.props as PuckRootProps)?.country || country,
+          language: (currentData.root?.props as PuckRootProps)?.language || language,
+          content: currentData,
           userId: "admin", // TODO: 从用户会话获取
+          // 原始参数，用于查找已有记录
+          originalSlug: slug,
+          originalCountry: country,
+          originalLanguage: language,
         }),
       });
 
@@ -81,11 +148,17 @@ export default function PuckEditor() {
 
       if (result.success) {
         showToast("草稿保存成功！", "success");
-        
-        // 如果 slug 发生了变化（Slug 被修改），更新 URL
-        if (result.slug && result.slug !== slug) {
+
+        // 如果 slug/country/language 发生了变化，更新 URL
+        if (
+          result.slug !== slug ||
+          result.country !== country ||
+          result.language !== language
+        ) {
           const params = new URLSearchParams(searchParams.toString());
           params.set("slug", result.slug);
+          params.set("country", result.country);
+          params.set("language", result.language);
           router.push(`${pathname}?${params.toString()}`);
         }
       } else {
@@ -97,7 +170,7 @@ export default function PuckEditor() {
     } finally {
       setIsSaving(false);
     }
-  }, [data, slug, isSaving, router, pathname, searchParams, showToast]);
+  }, [slug, country, language, isSaving, router, pathname, searchParams, showToast]);
 
   // 发布回调
   const handlePublish = useCallback(async (publishData: Data) => {
@@ -114,8 +187,13 @@ export default function PuckEditor() {
         },
         body: JSON.stringify({
           slug,
+          country: (publishData.root?.props as PuckRootProps)?.country || country,
+          language: (publishData.root?.props as PuckRootProps)?.language || language,
           content: publishData,
           userId: "admin", // TODO: 从用户会话获取
+          originalSlug: slug,
+          originalCountry: country,
+          originalLanguage: language,
         }),
       });
 
@@ -135,6 +213,8 @@ export default function PuckEditor() {
         },
         body: JSON.stringify({
           slug: currentSlug,
+          country: saveDraftResult.country || country,
+          language: saveDraftResult.language || language,
           userId: "admin", // TODO: 从用户会话获取
           remark: `发布于 ${new Date().toLocaleString("zh-CN")}`,
         }),
@@ -144,11 +224,20 @@ export default function PuckEditor() {
 
       if (publishResult.success) {
         showToast("页面发布成功！", "success");
-        
-        // 如果 slug 发生了变化，更新 URL
-        if (currentSlug !== slug) {
+
+        // 如果 slug/country/language 发生了变化，更新 URL
+        const currentCountry = saveDraftResult.country || country;
+        const currentLanguage = saveDraftResult.language || language;
+
+        if (
+          currentSlug !== slug ||
+          currentCountry !== country ||
+          currentLanguage !== language
+        ) {
           const params = new URLSearchParams(searchParams.toString());
           params.set("slug", currentSlug);
+          params.set("country", currentCountry);
+          params.set("language", currentLanguage);
           router.push(`${pathname}?${params.toString()}`);
         }
       } else {
@@ -160,14 +249,16 @@ export default function PuckEditor() {
     } finally {
       setIsPublishing(false);
     }
-  }, [slug, isPublishing, router, pathname, searchParams, showToast]);
+  }, [slug, country, language, isPublishing, router, pathname, searchParams, showToast]);
 
   // 预览回调
   const handlePreview = useCallback(() => {
     // 将当前数据存储到 sessionStorage
     sessionStorage.setItem("puck-preview-data", JSON.stringify(data));
     // 在新窗口中打开预览页面
-    window.open("/admin/puck/preview", "_blank");
+    const currentProps = (data.root?.props as PuckRootProps) || {};
+    const previewUrl = `/${currentProps.country || country}/${currentProps.language || language}/${currentProps.slug || slug}`;
+    window.open(previewUrl, "_blank");
   }, [data]);
 
   // 获取版本历史
@@ -224,6 +315,150 @@ export default function PuckEditor() {
     }
   };
 
+  // 使用 useMemo 优化 overrides，避免不必要的重渲染
+  const overrides = useMemo(() => ({
+    headerActions: ({ children }: { children: ReactNode }) => (
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginRight: "12px", borderRight: "1px solid #e5e7eb", paddingRight: "12px" }}>
+          <select
+            value={country}
+            onChange={(e) => {
+              const newCountry = e.target.value;
+              const supportedLangs = getSupportedLanguages(newCountry);
+              // 如果当前语言在新国家不支持，切换到该国家的第一个支持语言
+              const newLang = supportedLangs.some((l) => l.code === language)
+                ? language
+                : supportedLangs[0].code;
+
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("country", newCountry);
+              params.set("language", newLang);
+              router.push(`${pathname}?${params.toString()}`);
+            }}
+            style={{
+              padding: "6px 8px",
+              borderRadius: "4px",
+              border: "1px solid #d1d5db",
+              fontSize: "14px",
+              backgroundColor: "white",
+              color: "#374151",
+              cursor: "pointer",
+              height: "36px"
+            }}
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={language}
+            onChange={(e) => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("language", e.target.value);
+              router.push(`${pathname}?${params.toString()}`);
+            }}
+            style={{
+              padding: "6px 8px",
+              borderRadius: "4px",
+              border: "1px solid #d1d5db",
+              fontSize: "14px",
+              backgroundColor: "white",
+              color: "#374151",
+              cursor: "pointer",
+              height: "36px"
+            }}
+          >
+            {getSupportedLanguages(country).map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.nativeName}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          onClick={handlePreview}
+          style={{
+            marginRight: "8px",
+            padding: "8px 16px",
+            backgroundColor: "#6b7280",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
+            height: "36px"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#4b5563";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#6b7280";
+          }}
+        >
+          View Page
+        </button>
+        <button
+          onClick={toggleHistory}
+          style={{
+            marginRight: "8px",
+            padding: "8px 16px",
+            backgroundColor: "#6366f1",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
+            height: "36px"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#4f46e5";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#6366f1";
+          }}
+        >
+          History
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          style={{
+            marginRight: "8px",
+            padding: "8px 16px",
+            backgroundColor: isSaving ? "#9ca3af" : "#10b981",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: isSaving ? "not-allowed" : "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
+            opacity: isSaving ? 0.6 : 1,
+            height: "36px"
+          }}
+          onMouseEnter={(e) => {
+            if (!isSaving) {
+              e.currentTarget.style.backgroundColor = "#059669";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isSaving) {
+              e.currentTarget.style.backgroundColor = "#10b981";
+            }
+          }}
+        >
+          {isSaving ? "保存中..." : "Save"}
+        </button>
+        {children}
+      </div>
+    ),
+  }), [country, language, searchParams, router, pathname, handlePreview, toggleHistory, handleSave, isSaving]);
+
   // 加载中状态
   if (isLoading) {
     return (
@@ -260,96 +495,18 @@ export default function PuckEditor() {
   }
 
   return (
-    <div>
+    <div key={`${slug}-${country}-${language}`}>
       <Puck
         config={puckConfig}
         data={data}
         onPublish={handlePublish}
         onChange={handleChange}
-        overrides={{
-          headerActions: ({ children }) => (
-            <>
-              <button
-                onClick={handlePreview}
-                style={{
-                  marginRight: "8px",
-                  padding: "8px 16px",
-                  backgroundColor: "#6b7280",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#4b5563";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#6b7280";
-                }}
-              >
-                View Page
-              </button>
-              <button
-                onClick={toggleHistory}
-                style={{
-                  marginRight: "8px",
-                  padding: "8px 16px",
-                  backgroundColor: "#6366f1",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#4f46e5";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#6366f1";
-                }}
-              >
-                History
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                style={{
-                  marginRight: "8px",
-                  padding: "8px 16px",
-                  backgroundColor: isSaving ? "#9ca3af" : "#10b981",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: isSaving ? "not-allowed" : "pointer",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  opacity: isSaving ? 0.6 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.backgroundColor = "#059669";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.backgroundColor = "#10b981";
-                  }
-                }}
-              >
-                {isSaving ? "保存中..." : "Save"}
-              </button>
-              {children}
-            </>
-          ),
-        }}
+        overrides={overrides}
       />
 
       {/* 历史版本侧边栏 */}
       {showHistory && (
-        <div 
+        <div
           style={{
             position: "fixed",
             top: 0,
@@ -368,7 +525,7 @@ export default function PuckEditor() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: 0 }}>版本历史</h2>
-            <button 
+            <button
               onClick={() => setShowHistory(false)}
               style={{ border: "none", background: "none", cursor: "pointer", fontSize: "20px", color: "#666" }}
             >
@@ -383,11 +540,11 @@ export default function PuckEditor() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {versions.map((v) => (
-                <div 
-                  key={v.id} 
-                  style={{ 
-                    border: "1px solid #e5e7eb", 
-                    borderRadius: "8px", 
+                <div
+                  key={v.id}
+                  style={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
                     padding: "12px",
                     backgroundColor: v.is_published ? "#f0fdf4" : "white"
                   }}

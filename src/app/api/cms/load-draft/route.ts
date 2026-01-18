@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
+    const country = searchParams.get('country') || 'glo';
+    const language = searchParams.get('language') || 'en';
 
     // 验证参数
     if (!slug) {
@@ -20,8 +22,10 @@ export async function GET(request: NextRequest) {
     }
 
     // 获取页面信息
-    const page = await cmsPageRepository.findOne({ 
-      slug: slug,
+    const page = await cmsPageRepository.findOne({
+      slug,
+      country_code: country,
+      language_code: language,
       is_deleted: 0,
     });
 
@@ -33,7 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 加载草稿内容
-    const content = await CmsHelper.getDraftContent(slug);
+    const content = await CmsHelper.getDraftContent(slug, country, language);
 
     // 如果草稿内容存在，将 title 和 slug 注入到 root.props 中
     if (content) {
@@ -46,6 +50,9 @@ export async function GET(request: NextRequest) {
       // 从数据库中获取的 title 和 slug 优先级更高
       content.root.props.title = page.title || '';
       content.root.props.slug = page.slug || '';
+      // Ensure country/language in props match
+      (content.root.props as any).country = page.country_code || country;
+      (content.root.props as any).language = page.language_code || language;
     }
 
     return NextResponse.json({
@@ -55,13 +62,15 @@ export async function GET(request: NextRequest) {
         id: page.id,
         title: page.title,
         slug: page.slug,
+        country: page.country_code,
+        language: page.language_code,
       },
     });
   } catch (error) {
     console.error('加载草稿失败:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: error instanceof Error ? error.message : '加载草稿失败',
         success: false,
       },

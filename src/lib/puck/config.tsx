@@ -1,5 +1,28 @@
 import type { Config, Data } from "@puckeditor/core";
 import type { ReactNode } from "react";
+import { COUNTRIES, LANGUAGES, DEFAULT_LANGUAGE } from "@/config/locales";
+import { MultiLanguageInput } from "@/app/admin/puck/components/fields/MultiLanguageInput";
+
+/**
+ * 获取多语言文本的辅助函数
+ */
+const getI18nValue = (value: any, language?: string) => {
+  let currentLanguage = language;
+
+  // 如果没有显式指定语言，尝试从 URL 获取 (仅在客户端)
+  if (!currentLanguage && typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    currentLanguage = params.get("language") || DEFAULT_LANGUAGE;
+  }
+
+  const lang = currentLanguage || DEFAULT_LANGUAGE;
+
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    return value[lang] || value[DEFAULT_LANGUAGE] || "";
+  }
+  return "";
+};
 
 /**
  * Puck 组件配置
@@ -9,28 +32,62 @@ export const puckConfig: Config = {
   // Root 字段配置（右侧边栏的 Page 区域）
   root: {
     fields: {
-      title: { 
-        type: "text", 
+      title: {
         label: "Title",
+        type: "custom",
+        render: MultiLanguageInput as any,
       },
-      slug: { 
-        type: "text", 
+      slug: {
+        type: "text",
         label: "Slug *",
+      },
+      // 新增：国家选择器
+      country: {
+        type: "select",
+        label: "Country *",
+        options: COUNTRIES.map((c) => ({
+          label: `${c.flag} ${c.name} (${c.code})`,
+          value: c.code,
+        })),
+      },
+      // 新增：语言选择器（解决用户反馈刷新后看不到设置的问题）
+      language: {
+        type: "select",
+        label: "Language *",
+        options: LANGUAGES.map((l) => ({
+          label: `${l.nativeName} (${l.code})`,
+          value: l.code,
+        })),
+      },
+      // 新增：SEO 描述（可选）
+      description: {
+        label: "SEO Description",
+        type: "custom",
+        render: (props) => <MultiLanguageInput {...props} field={{ ...props.field, type: "textarea" }} />,
       },
     },
     defaultProps: {
       title: "",
       slug: "",
+      country: "glo",
+      language: "en",
+      description: "",
     },
-    render: ({ children }: { children: ReactNode }) => {
-      return <>{children}</>;
+    render: (props: any) => {
+      return <>{props.children}</>;
     },
   },
   components: {
     // 标题组件
     Heading: {
       fields: {
-        text: { type: "text", label: "标题文本" },
+        text: {
+          label: "标题文本",
+          type: "custom",
+          render: (props: any) => (
+            <MultiLanguageInput {...props} field={{ ...props.field, type: "text" }} />
+          ),
+        },
         level: {
           type: "select",
           label: "标题级别",
@@ -45,23 +102,34 @@ export const puckConfig: Config = {
         text: "标题文本",
         level: "h1",
       },
-      render: ({ text, level }) => {
+      render: ({ text, level, puck }: any) => {
+        const localizedText = getI18nValue(text);
         const className = "puck-heading";
-        if (level === "h1") return <h1 className={className}>{text}</h1>;
-        if (level === "h2") return <h2 className={className}>{text}</h2>;
-        return <h3 className={className}>{text}</h3>;
+        if (level === "h1") return <h1 className={className}>{localizedText}</h1>;
+        if (level === "h2") return <h2 className={className}>{localizedText}</h2>;
+        return <h3 className={className}>{localizedText}</h3>;
       },
     },
     // 段落组件
     Paragraph: {
       fields: {
-        content: { type: "textarea", label: "段落内容" },
+        content: {
+          label: "段落内容",
+          type: "custom",
+          render: (props: any) => (
+            <MultiLanguageInput
+              {...props}
+              field={{ ...props.field, type: "textarea" }}
+            />
+          ),
+        },
       },
       defaultProps: {
         content: "在这里输入段落内容...",
       },
-      render: ({ content }) => {
-        return <p className="puck-paragraph">{content}</p>;
+      render: ({ content, puck }: any) => {
+        const localizedContent = getI18nValue(content);
+        return <p className="puck-paragraph">{localizedContent}</p>;
       },
     },
     // 图片组件
@@ -86,7 +154,13 @@ export const puckConfig: Config = {
     // 按钮组件
     Button: {
       fields: {
-        text: { type: "text", label: "按钮文本" },
+        text: {
+          label: "按钮文本",
+          type: "custom",
+          render: (props: any) => (
+            <MultiLanguageInput {...props} field={{ ...props.field, type: "text" }} />
+          ),
+        },
         href: { type: "text", label: "链接地址" },
         variant: {
           type: "select",
@@ -103,10 +177,11 @@ export const puckConfig: Config = {
         href: "#",
         variant: "primary",
       },
-      render: ({ text, href, variant }) => {
+      render: ({ text, href, variant, puck }: any) => {
+        const localizedText = getI18nValue(text);
         return (
           <a href={href} className={`puck-button puck-button--${variant}`}>
-            {text}
+            {localizedText}
           </a>
         );
       },
@@ -160,6 +235,9 @@ export const initialData = {
     props: {
       title: "",
       slug: "",
+      country: "glo",
+      language: "en",
+      description: "",
     },
   },
   content: [],
