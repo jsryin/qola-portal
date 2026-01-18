@@ -43,6 +43,18 @@ export default function PuckEditor() {
   const [loadingVersions, setLoadingVersions] = useState(false);
   const { showToast } = useToast();
 
+  // 清理可能存在的旧 Service Worker (解决缓存顽疾)
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          console.log("Unregistering Service Worker:", registration);
+          registration.unregister();
+        }
+      });
+    }
+  }, []);
+
   // 加载草稿内容
   useEffect(() => {
     const loadDraft = async () => {

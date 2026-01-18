@@ -1,5 +1,6 @@
 import type { Config, Data } from "@puckeditor/core";
 import type { ReactNode } from "react";
+import { createContext, useContext } from "react";
 import { COUNTRIES, LANGUAGES, DEFAULT_LANGUAGE } from "@/config/locales";
 import { MultiLanguageInput } from "@/app/admin/puck/components/fields/MultiLanguageInput";
 
@@ -11,20 +12,11 @@ const getI18nValue = (value: any, language?: string) => {
 
   let currentLanguage = language;
 
-  // 如果没有显式指定语言，尝试从各种环境获取
+  // 移除 window.location 的检测，因为这会导致服务端渲染(SSR)和客户端渲染不一致（Hydration Error）。
+  // 必须严格依赖传入的 language 参数。
   if (!currentLanguage) {
-    if (typeof window !== "undefined") {
-      // 1. 优先尝试从路径获取 (格式: /[country]/[language]/)
-      const pathParts = window.location.pathname.split('/');
-      // 注意：pathParts[0] 是空字符串
-      if (pathParts.length >= 3 && LANGUAGES.some(l => l.code === pathParts[2])) {
-        currentLanguage = pathParts[2];
-      } else {
-        // 2. 尝试从查询参数获取
-        const params = new URLSearchParams(window.location.search);
-        currentLanguage = params.get("language") || undefined;
-      }
-    }
+    // 可以在这里添加日志，或者直接回退到默认语言
+    // console.warn("getI18nValue called without language, defaulting to:", DEFAULT_LANGUAGE);
   }
 
   const lang = currentLanguage || DEFAULT_LANGUAGE;
@@ -44,6 +36,9 @@ const getI18nValue = (value: any, language?: string) => {
 
   return String(value);
 };
+
+// 创建语言上下文
+const LanguageContext = createContext<string>(DEFAULT_LANGUAGE);
 
 /**
  * Puck 组件配置
@@ -86,7 +81,14 @@ export const puckConfig: Config = {
       description: "",
     },
     render: (props: any) => {
-      return <>{props.children}</>;
+      // 优先使用 props.language (如果有)，否则使用默认值
+      // PuckRenderer 会将 url 中的 language 注入到 root props 中
+      const language = props.language || DEFAULT_LANGUAGE;
+      return (
+        <LanguageContext.Provider value={language}>
+          {props.children}
+        </LanguageContext.Provider>
+      );
     },
   },
   components: {
@@ -115,7 +117,10 @@ export const puckConfig: Config = {
         level: "h1",
       },
       render: ({ text, level, puck }: any) => {
-        const language = (puck.root?.props?.language || puck.data?.root?.props?.language) as string;
+        const contextLanguage = useContext(LanguageContext);
+        // 兼容旧逻辑：如果 Context 取不到（极少情况），尝试从 puck 对象取
+        const language = contextLanguage || (puck?.root?.props?.language || puck?.data?.root?.props?.language) as string;
+
         const localizedText = getI18nValue(text, language);
         const className = "puck-heading";
         if (level === "h1") return <h1 className={className}>{localizedText}</h1>;
@@ -141,7 +146,8 @@ export const puckConfig: Config = {
         content: "在这里输入段落内容...",
       },
       render: ({ content, puck }: any) => {
-        const language = (puck.root?.props?.language || puck.data?.root?.props?.language) as string;
+        const contextLanguage = useContext(LanguageContext);
+        const language = contextLanguage || (puck?.root?.props?.language || puck?.data?.root?.props?.language) as string;
         const localizedContent = getI18nValue(content, language);
         return <p className="puck-paragraph">{localizedContent}</p>;
       },
@@ -192,7 +198,8 @@ export const puckConfig: Config = {
         variant: "primary",
       },
       render: ({ text, href, variant, puck }: any) => {
-        const language = (puck.root?.props?.language || puck.data?.root?.props?.language) as string;
+        const contextLanguage = useContext(LanguageContext);
+        const language = contextLanguage || (puck?.root?.props?.language || puck?.data?.root?.props?.language) as string;
         const localizedText = getI18nValue(text, language);
         return (
           <a href={href} className={`puck-button puck-button--${variant}`}>
