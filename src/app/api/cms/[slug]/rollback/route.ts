@@ -9,7 +9,7 @@ export async function POST(
   try {
     const slug = (await params).slug;
     const body = await request.json();
-    const { versionNum, userId } = body;
+    const { versionNum, country = 'glo', userId } = body;
 
     if (!versionNum) {
       return NextResponse.json(
@@ -18,7 +18,7 @@ export async function POST(
       );
     }
 
-    await CmsHelper.rollbackToVersion(slug, versionNum, userId || 'admin');
+    await CmsHelper.rollbackToVersion(slug, versionNum, country, userId || 'admin');
 
     return NextResponse.json({
       success: true,

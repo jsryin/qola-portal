@@ -48,60 +48,45 @@ export class CmsHelper {
 
   /**
    * 保存草稿
-   * @param slug 页面唯一标识
-   * @param content Puck JSON 数据
-   * @param userId 用户ID
-   * @param title 页面标题
-   * @param newSlug 新的页面标识（可选，用于修改 slug）
-   */
-  /**
-   * 保存草稿
    */
   static async saveDraft(params: {
     slug: string;
     country: string;
-    language: string;
     content: PuckData;
     userId?: string;
     title?: string;
     originalSlug?: string;
     originalCountry?: string;
-    originalLanguage?: string;
   }): Promise<void> {
     const {
-      slug, country, language, content, userId, title,
-      originalSlug, originalCountry, originalLanguage
+      slug, country, content, userId, title,
+      originalSlug, originalCountry
     } = params;
 
-    // 查找原有页面 (使用 original 参数，如果未提供则使用当前参数)
-    // 注意：如果是新建页面，originalXXX 可能为空或与 XXX 相同
+    // 查找原有页面
     const searchSlug = originalSlug || slug;
     const searchCountry = originalCountry || country;
-    const searchLanguage = originalLanguage || language;
 
     const page = await cmsPageRepository.findOne({
       slug: searchSlug,
       country_code: searchCountry,
-      language_code: searchLanguage
     });
 
     if (!page) {
-      // 如果页面不存在，检查目标 slug+country+language 是否已存在
+      // 如果页面不存在，检查目标 slug+country 是否已存在
       const existingPage = await cmsPageRepository.findOne({
         slug,
         country_code: country,
-        language_code: language
       });
 
       if (existingPage) {
-        throw new Error(`该国家/语言下已存在相同的 Slug: ${country}/${language}/${slug}`);
+        throw new Error(`该国家下已存在相同的 Slug: ${country}/${slug}`);
       }
 
       // 创建新页面
       await cmsPageRepository.create({
         slug,
         country_code: country,
-        language_code: language,
         title: title || slug,
         draft_content: JSON.stringify(content),
         created_by: userId,
@@ -121,26 +106,20 @@ export class CmsHelper {
 
     if (title !== undefined) updateData.title = title;
 
-    // 检查是否需要更新元数据 (slug/country/language)
-    if (
-      slug !== page.slug ||
-      country !== page.country_code ||
-      language !== page.language_code
-    ) {
+    // 检查是否需要更新元数据 (slug/country)
+    if (slug !== page.slug || country !== page.country_code) {
       // 检查目标组合是否已被占用
       const existingPage = await cmsPageRepository.findOne({
         slug,
         country_code: country,
-        language_code: language
       });
 
       if (existingPage && existingPage.id !== page.id) {
-        throw new Error(`目标页面已存在: ${country}/${language}/${slug}`);
+        throw new Error(`目标页面已存在: ${country}/${slug}`);
       }
 
       updateData.slug = slug;
       updateData.country_code = country;
-      updateData.language_code = language;
     }
 
     await cmsPageRepository.update(
@@ -151,25 +130,20 @@ export class CmsHelper {
 
   /**
    * 发布页面
-   * @param slug 页面唯一标识
-   * @param userId 用户ID
-   * @param remark 版本备注
    */
   static async publishPage(
     slug: string,
     country: string = 'glo',
-    language: string = 'en',
     userId?: string,
     remark?: string
   ): Promise<number> {
     const page = await cmsPageRepository.findOne({
       slug,
       country_code: country,
-      language_code: language
     });
 
     if (!page) {
-      throw new Error(`页面不存在: ${country}/${language}/${slug}`);
+      throw new Error(`页面不存在: ${country}/${slug}`);
     }
 
     if (!page.draft_content) {
@@ -180,11 +154,10 @@ export class CmsHelper {
     const newVersion: Omit<CmsPageVersion, 'id' | 'created_at' | 'updated_at'> = {
       page_id: page.id!,
       country_code: country,
-      language_code: language,
       version_num: page.version_counter || 1,
       content: typeof page.draft_content === 'string'
         ? page.draft_content
-        : JSON.stringify(page.draft_content) || '', // 确保 content 不为 undefined
+        : JSON.stringify(page.draft_content) || '',
       is_published: 1,
       published_time: new Date(),
       created_by: userId,
@@ -217,25 +190,20 @@ export class CmsHelper {
 
   /**
    * 回滚到指定版本
-   * @param slug 页面唯一标识
-   * @param versionNum 版本号
-   * @param userId 用户ID
    */
   static async rollbackToVersion(
     slug: string,
     versionNum: number,
     country: string = 'glo',
-    language: string = 'en',
     userId?: string
   ): Promise<void> {
     const page = await cmsPageRepository.findOne({
       slug,
       country_code: country,
-      language_code: language
     });
 
     if (!page) {
-      throw new Error(`页面不存在: ${slug}`);
+      throw new Error(`页面不存在: ${country}/${slug}`);
     }
 
     const version = await cmsPageVersionRepository.findOne({
@@ -262,14 +230,13 @@ export class CmsHelper {
 
   /**
    * 获取页面的版本历史
-   * @param slug 页面唯一标识
-   * @param includeDeleted 是否包含已删除的版本
    */
   static async getVersionHistory(
     slug: string,
+    country: string = 'glo',
     includeDeleted = false
   ): Promise<CmsPageVersion[]> {
-    const page = await cmsPageRepository.findOne({ slug });
+    const page = await cmsPageRepository.findOne({ slug, country_code: country });
 
     if (!page) {
       throw new Error(`页面不存在: ${slug}`);
@@ -289,11 +256,9 @@ export class CmsHelper {
 
   /**
    * 软删除页面
-   * @param slug 页面唯一标识
-   * @param userId 用户ID
    */
-  static async deletePage(slug: string, userId?: string): Promise<void> {
-    const page = await cmsPageRepository.findOne({ slug });
+  static async deletePage(slug: string, country: string = 'glo', userId?: string): Promise<void> {
+    const page = await cmsPageRepository.findOne({ slug, country_code: country });
 
     if (!page) {
       throw new Error(`页面不存在: ${slug}`);
@@ -311,11 +276,9 @@ export class CmsHelper {
 
   /**
    * 恢复已删除的页面
-   * @param slug 页面唯一标识
-   * @param userId 用户ID
    */
-  static async restorePage(slug: string, userId?: string): Promise<void> {
-    const page = await cmsPageRepository.findOne({ slug });
+  static async restorePage(slug: string, country: string = 'glo', userId?: string): Promise<void> {
+    const page = await cmsPageRepository.findOne({ slug, country_code: country });
 
     if (!page) {
       throw new Error(`页面不存在: ${slug}`);
@@ -333,16 +296,14 @@ export class CmsHelper {
 
   /**
    * 软删除版本
-   * @param slug 页面唯一标识
-   * @param versionNum 版本号
-   * @param userId 用户ID
    */
   static async deleteVersion(
     slug: string,
     versionNum: number,
+    country: string = 'glo',
     userId?: string
   ): Promise<void> {
-    const page = await cmsPageRepository.findOne({ slug });
+    const page = await cmsPageRepository.findOne({ slug, country_code: country });
 
     if (!page) {
       throw new Error(`页面不存在: ${slug}`);
@@ -378,12 +339,10 @@ export class CmsHelper {
   static async getPublishedContent(
     slug: string,
     country: string = 'glo',
-    language: string = 'en'
   ): Promise<PuckData | null> {
     const page = await cmsPageRepository.findOne({
       slug,
       country_code: country,
-      language_code: language,
       is_deleted: 0,
     });
 
@@ -418,12 +377,10 @@ export class CmsHelper {
   static async getDraftContent(
     slug: string,
     country: string = 'glo',
-    language: string = 'en'
   ): Promise<PuckData | null> {
     const page = await cmsPageRepository.findOne({
       slug,
       country_code: country,
-      language_code: language,
       is_deleted: 0,
     });
 
@@ -442,6 +399,7 @@ export class CmsHelper {
 
     return page.draft_content as PuckData;
   }
+
   /**
    * 搜索页面
    */
@@ -473,12 +431,8 @@ export class CmsHelper {
 
     // Data
     const dataSql = `SELECT * FROM cms_page ${whereClause} ORDER BY updated_time DESC LIMIT ? OFFSET ?`;
-    // MySQL LIMIT/OFFSET expects integers, safe to push directly or rely on driver
-    // Note: tidb/mysql driver usually handles numbers correctly in parameterized queries
     const dataParams = [...params, pageSize, offset];
 
-    // cast result to CmsPage[] 
-    // rawQuery returns generic RowDataPacket[], we assert it
     const data = await cmsPageRepository.rawQuery<(CmsPage & import('@/lib/db/connection').RowDataPacket)[]>(dataSql, dataParams);
 
     return {

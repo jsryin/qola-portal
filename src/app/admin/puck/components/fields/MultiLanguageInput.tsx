@@ -1,57 +1,41 @@
-import React, { useState, useEffect, useRef } from "react";
+"use client";
+
+import React, { useState, useMemo } from "react";
 import { Globe } from "lucide-react";
 import { LANGUAGES, DEFAULT_LANGUAGE } from "@/config/locales";
-import { useSearchParams } from "next/navigation";
 
 interface MultiLanguageInputProps {
     value: string | Record<string, string>;
-    name: string;
     onChange: (value: any) => void;
-    label?: string;
-    field: {
-        type: "text" | "textarea" | string;
-        label?: string;
-    };
+    name: string;
+    field: any;
 }
 
-export const MultiLanguageInput: React.FC<MultiLanguageInputProps> = ({
+/**
+ * 多语言输入组件
+ * 将翻译存储在单个 JSON 对象中，并允许切换当前显示的语言
+ * 使用原生 HTML/CSS 避免缺失组件依赖
+ */
+export const MultiLanguageInput = ({
     value,
-    name,
     onChange,
     field,
-}) => {
-    const searchParams = useSearchParams();
-    // 获取当前正在编辑的语言环境
-    const currentEditLanguage = searchParams.get("language") || DEFAULT_LANGUAGE;
+}: MultiLanguageInputProps) => {
+    const [currentEditLang, setCurrentEditLang] = useState(DEFAULT_LANGUAGE);
+    const [isOpen, setIsOpen] = useState(false);
 
-    // Normalize value to an object
-    const normalizedValue = React.useMemo(() => {
+    // 规范化数据格式
+    const normalizedValue = useMemo(() => {
         if (typeof value === "string") {
             return { [DEFAULT_LANGUAGE]: value };
         }
-        return value || { [DEFAULT_LANGUAGE]: "" };
+        return (value || {}) as Record<string, string>;
     }, [value]);
 
-    const [isOpen, setIsOpen] = useState(false);
-    const popoverRef = useRef<HTMLDivElement>(null);
-
-    // Close popover when clicking outside
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
-    const handleChange = (langCode: string, newValue: string) => {
+    const handleChange = (lang: string, newValue: string) => {
         const updatedValue = {
             ...normalizedValue,
-            [langCode]: newValue,
+            [lang]: newValue,
         };
         onChange(updatedValue);
     };
@@ -60,68 +44,117 @@ export const MultiLanguageInput: React.FC<MultiLanguageInputProps> = ({
     const InputComponent = isTextarea ? "textarea" : "input";
 
     return (
-        <div className="relative flex items-center gap-2 w-full">
-            <div className="flex-1 relative">
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ position: "relative", width: "100%" }}>
                 <InputComponent
-                    className={`w-full p-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isTextarea ? "min-h-[100px]" : "h-10"
-                        } text-sm`}
-                    value={normalizedValue[currentEditLanguage] || ""}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                        handleChange(currentEditLanguage, e.target.value)
-                    }
-                    placeholder={`Enter ${field.label || ""} (${currentEditLanguage.toUpperCase()})`}
+                    style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        paddingRight: "36px", // 为地球图标留出空间
+                        borderRadius: "6px",
+                        border: "1px solid #d1d5db",
+                        fontSize: "14px",
+                        minHeight: isTextarea ? "80px" : "36px",
+                        outline: "none",
+                        boxSizing: "border-box",
+                    }}
+                    value={normalizedValue[currentEditLang] || ""}
+                    onChange={(e: any) => handleChange(currentEditLang, e.target.value)}
+                    placeholder={`Enter ${LANGUAGES.find(l => l.code === currentEditLang)?.name || 'content'}...`}
                 />
 
-                {/* Globe Icon Trigger */}
-                <button
-                    type="button"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className={`absolute right-2 top-2 p-1 transition-colors ${isOpen ? "text-blue-600" : "text-gray-400 hover:text-blue-500"
-                        }`}
-                    title="Manage translations"
-                >
-                    <Globe size={16} />
-                </button>
-
-                {/* Popover */}
-                {isOpen && (
-                    <div
-                        ref={popoverRef}
-                        className="absolute right-0 top-full mt-2 w-72 bg-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] border border-gray-100 rounded-xl p-4 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200"
+                <div style={{
+                    position: "absolute",
+                    right: "4px",
+                    top: isTextarea ? "8px" : "50%",
+                    transform: isTextarea ? "none" : "translateY(-50%)",
+                    display: "flex",
+                    alignItems: "center",
+                    zIndex: 10
+                }}>
+                    <button
+                        type="button"
+                        onClick={() => setIsOpen(!isOpen)}
+                        style={{
+                            height: "28px",
+                            width: "28px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "4px",
+                            border: "none",
+                            backgroundColor: isOpen ? "#f3f4f6" : "transparent",
+                            cursor: "pointer",
+                            transition: "background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isOpen) e.currentTarget.style.backgroundColor = "#f9fafb";
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isOpen) e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                        title="Translations"
                     >
-                        <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-2">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                                Translations
-                            </h4>
-                            <span className="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">
-                                {LANGUAGES.length} Languages
-                            </span>
-                        </div>
-                        <div className="max-h-[300px] overflow-y-auto space-y-4 pr-1 scrollbar-thin scrollbar-thumb-gray-200">
-                            {/* 显示除了当前主语言以外的其他语言 */}
-                            {LANGUAGES.filter((l) => l.code !== currentEditLanguage).map((lang) => (
-                                <div key={lang.code} className="space-y-1.5">
-                                    <div className="flex items-center gap-1.5">
-                                        <label className="text-[11px] font-semibold text-gray-500">
-                                            {lang.nativeName} ({lang.code.toUpperCase()})
-                                        </label>
+                        <Globe style={{ width: "14px", height: "14px", color: "#9ca3af" }} />
+                    </button>
+
+                    {isOpen && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: "100%",
+                                right: 0,
+                                marginTop: "8px",
+                                width: "280px",
+                                backgroundColor: "white",
+                                boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+                                border: "1px solid #e5e7eb",
+                                borderRadius: "8px",
+                                padding: "16px",
+                                zIndex: 1000,
+                            }}
+                        >
+                            <div style={{ paddingBottom: "8px", borderBottom: "1px solid #f3f4f6", marginBottom: "12px" }}>
+                                <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#374151" }}>Translations</h4>
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "300px", overflowY: "auto" }}>
+                                {LANGUAGES.map((lang) => (
+                                    <div key={lang.code} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <label
+                                                style={{
+                                                    fontSize: "11px",
+                                                    fontWeight: 600,
+                                                    cursor: "pointer",
+                                                    color: currentEditLang === lang.code ? "#2563eb" : "#6b7280",
+                                                }}
+                                                onClick={() => setCurrentEditLang(lang.code)}
+                                            >
+                                                {lang.nativeName} ({lang.code.toUpperCase()})
+                                                {currentEditLang === lang.code && " (Active)"}
+                                            </label>
+                                        </div>
+                                        <InputComponent
+                                            style={{
+                                                padding: "6px 10px",
+                                                fontSize: "13px",
+                                                borderRadius: "4px",
+                                                border: "1px solid #e5e7eb",
+                                                outline: "none",
+                                                minHeight: isTextarea ? "60px" : "32px",
+                                            }}
+                                            value={normalizedValue[lang.code] || ""}
+                                            onChange={(e: any) => handleChange(lang.code, e.target.value)}
+                                            placeholder={`Translation for ${lang.name}`}
+                                        />
                                     </div>
-                                    <InputComponent
-                                        className={`w-full p-2 text-sm bg-gray-50 border border-transparent rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${isTextarea ? "min-h-[70px]" : "h-9"
-                                            }`}
-                                        value={normalizedValue[lang.code] || ""}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                                            handleChange(lang.code, e.target.value)
-                                        }
-                                        placeholder={`Translation for ${lang.name}`}
-                                    />
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
 };
-

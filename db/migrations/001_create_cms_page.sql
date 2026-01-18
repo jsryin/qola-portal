@@ -5,7 +5,6 @@ CREATE TABLE `cms_page` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `slug` VARCHAR(128) NOT NULL COMMENT '页面路径标识(如: home, about-us)',
   `country_code` VARCHAR(10) NOT NULL DEFAULT 'glo' COMMENT '国家简称(如: ae, sa, cn, glo=global)',
-  `language_code` VARCHAR(10) NOT NULL DEFAULT 'en' COMMENT '主语言/默认语言(如: en, ar, zh)',
   `title` VARCHAR(255) NOT NULL COMMENT '页面标题(多语言名称或后台管理名称)',
   
   -- 核心字段：热草稿
@@ -29,9 +28,9 @@ CREATE TABLE `cms_page` (
   
   PRIMARY KEY (`id`),
   -- 联合唯一索引：确保同一个国家、同一语言下的 slug 唯一
-  UNIQUE KEY `uk_slug_country_lang` (`slug`, `country_code`, `language_code`),
-  -- 普通索引：加速按国家或语言筛选
-  KEY `idx_country_lang` (`country_code`, `language_code`),
+  UNIQUE KEY `uk_slug_country` (`slug`, `country_code`),
+  -- 普通索引：加速按国家筛选
+  KEY `idx_country` (`country_code`),
   KEY `idx_is_deleted` (`is_deleted`),
   KEY `idx_published_version` (`published_version_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='可视化页面元数据表';

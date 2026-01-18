@@ -7,21 +7,42 @@ import { MultiLanguageInput } from "@/app/admin/puck/components/fields/MultiLang
  * 获取多语言文本的辅助函数
  */
 const getI18nValue = (value: any, language?: string) => {
+  if (!value) return "";
+
   let currentLanguage = language;
 
-  // 如果没有显式指定语言，尝试从 URL 获取 (仅在客户端)
-  if (!currentLanguage && typeof window !== "undefined") {
-    const params = new URLSearchParams(window.location.search);
-    currentLanguage = params.get("language") || DEFAULT_LANGUAGE;
+  // 如果没有显式指定语言，尝试从各种环境获取
+  if (!currentLanguage) {
+    if (typeof window !== "undefined") {
+      // 1. 优先尝试从路径获取 (格式: /[country]/[language]/)
+      const pathParts = window.location.pathname.split('/');
+      // 注意：pathParts[0] 是空字符串
+      if (pathParts.length >= 3 && LANGUAGES.some(l => l.code === pathParts[2])) {
+        currentLanguage = pathParts[2];
+      } else {
+        // 2. 尝试从查询参数获取
+        const params = new URLSearchParams(window.location.search);
+        currentLanguage = params.get("language") || undefined;
+      }
+    }
   }
 
   const lang = currentLanguage || DEFAULT_LANGUAGE;
 
   if (typeof value === "string") return value;
+
   if (value && typeof value === "object") {
-    return value[lang] || value[DEFAULT_LANGUAGE] || "";
+    // 确保我们不返回整个对象
+    const localized = value[lang] || value[DEFAULT_LANGUAGE] || "";
+    if (typeof localized === "object") {
+      // 这里的极端情况：如果 localized 还是个对象，返回第一个键的值或空
+      const keys = Object.keys(localized);
+      return keys.length > 0 ? String(localized[keys[0]]) : "";
+    }
+    return String(localized);
   }
-  return "";
+
+  return String(value);
 };
 
 /**
@@ -32,7 +53,7 @@ export const puckConfig: Config = {
   // Root 字段配置（右侧边栏的 Page 区域）
   root: {
     fields: {
-      title: {
+      pageTitle: {
         label: "Title",
         type: "custom",
         render: MultiLanguageInput as any,
@@ -50,15 +71,6 @@ export const puckConfig: Config = {
           value: c.code,
         })),
       },
-      // 新增：语言选择器（解决用户反馈刷新后看不到设置的问题）
-      language: {
-        type: "select",
-        label: "Language *",
-        options: LANGUAGES.map((l) => ({
-          label: `${l.nativeName} (${l.code})`,
-          value: l.code,
-        })),
-      },
       // 新增：SEO 描述（可选）
       description: {
         label: "SEO Description",
@@ -67,10 +79,10 @@ export const puckConfig: Config = {
       },
     },
     defaultProps: {
-      title: "",
+      pageTitle: "",
+      title: "", // 保留一个 string 类型的 title 供 Puck 系统内部使用
       slug: "",
       country: "glo",
-      language: "en",
       description: "",
     },
     render: (props: any) => {
@@ -103,7 +115,8 @@ export const puckConfig: Config = {
         level: "h1",
       },
       render: ({ text, level, puck }: any) => {
-        const localizedText = getI18nValue(text);
+        const language = (puck.root?.props?.language || puck.data?.root?.props?.language) as string;
+        const localizedText = getI18nValue(text, language);
         const className = "puck-heading";
         if (level === "h1") return <h1 className={className}>{localizedText}</h1>;
         if (level === "h2") return <h2 className={className}>{localizedText}</h2>;
@@ -128,7 +141,8 @@ export const puckConfig: Config = {
         content: "在这里输入段落内容...",
       },
       render: ({ content, puck }: any) => {
-        const localizedContent = getI18nValue(content);
+        const language = (puck.root?.props?.language || puck.data?.root?.props?.language) as string;
+        const localizedContent = getI18nValue(content, language);
         return <p className="puck-paragraph">{localizedContent}</p>;
       },
     },
@@ -178,7 +192,8 @@ export const puckConfig: Config = {
         variant: "primary",
       },
       render: ({ text, href, variant, puck }: any) => {
-        const localizedText = getI18nValue(text);
+        const language = (puck.root?.props?.language || puck.data?.root?.props?.language) as string;
+        const localizedText = getI18nValue(text, language);
         return (
           <a href={href} className={`puck-button puck-button--${variant}`}>
             {localizedText}
@@ -233,6 +248,7 @@ export const puckConfig: Config = {
 export const initialData = {
   root: {
     props: {
+      pageTitle: "",
       title: "",
       slug: "",
       country: "glo",

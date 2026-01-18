@@ -12,27 +12,22 @@ export async function POST(request: NextRequest) {
     const {
       slug: originalSlug,
       country: originalCountry = 'glo',
-      language: originalLanguage = 'en',
       slug, // target slug (may be same as originalSlug if not renaming)
       country, // target country
-      language, // target language
       content,
       userId,
       // Fallback for older clients or if field names differ
       originalSlug: explicitOriginalSlug,
       originalCountry: explicitOriginalCountry,
-      originalLanguage: explicitOriginalLanguage,
     } = body;
 
     // Use explicit original params if provided (from my updated frontend), otherwise fallback
     const effectiveOriginalSlug = explicitOriginalSlug || originalSlug;
     const effectiveOriginalCountry = explicitOriginalCountry || originalCountry;
-    const effectiveOriginalLanguage = explicitOriginalLanguage || originalLanguage;
 
     // Target params, default to original if not provided
     const targetSlug = slug || effectiveOriginalSlug;
     const targetCountry = country || effectiveOriginalCountry;
-    const targetLanguage = language || effectiveOriginalLanguage;
 
     // 验证参数
     if (!effectiveOriginalSlug || typeof effectiveOriginalSlug !== 'string') {
@@ -51,7 +46,9 @@ export async function POST(request: NextRequest) {
 
     // 从 Puck 数据中提取 title
     const rootProps = content.root?.props as Record<string, unknown> | undefined;
-    const title = (rootProps?.title as string) || '';
+    // 优先从 pageTitle 获取 (多语言对象/字符串)，如果没有则回退并确保是字符串形式存储到数据库 title 列
+    const rawTitle = rootProps?.pageTitle || rootProps?.title || '';
+    const title = typeof rawTitle === 'object' ? JSON.stringify(rawTitle) : String(rawTitle);
 
     // 验证 newSlug 是必填的
     if (!targetSlug) {
@@ -65,13 +62,11 @@ export async function POST(request: NextRequest) {
     await CmsHelper.saveDraft({
       slug: targetSlug,
       country: targetCountry,
-      language: targetLanguage,
       content,
       userId,
       title,
       originalSlug: effectiveOriginalSlug,
       originalCountry: effectiveOriginalCountry,
-      originalLanguage: effectiveOriginalLanguage
     });
 
     return NextResponse.json({
@@ -79,7 +74,6 @@ export async function POST(request: NextRequest) {
       message: '草稿保存成功',
       slug: targetSlug,
       country: targetCountry,
-      language: targetLanguage,
     });
   } catch (error) {
     console.error('保存草稿失败:', error);
