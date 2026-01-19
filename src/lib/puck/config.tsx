@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
 import { COUNTRIES, LANGUAGES, DEFAULT_LANGUAGE } from "@/config/locales";
 import { MultiLanguageInput } from "@/app/admin/puck/components/fields/MultiLanguageInput";
+import { portalComponents } from "./portal-components/config";
 
 /**
  * 获取多语言文本的辅助函数
@@ -92,6 +93,11 @@ export const puckConfig: Config = {
     },
   },
   components: {
+    // ==================== Portal 组件 ====================
+    // 这些组件用于创建类似 ClientPortal 首页风格的页面
+    ...portalComponents,
+
+    // ==================== 基础组件 ====================
     // 标题组件
     Heading: {
       fields: {
