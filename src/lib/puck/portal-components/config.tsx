@@ -18,6 +18,7 @@ import PortalPouchFeatures from "@/app/[country]/[language]/components/PortalPou
 import PortalUserGuide from "@/app/[country]/[language]/components/PortalUserGuide";
 import PortalFooter from "@/app/[country]/[language]/components/PortalFooter";
 import MouseFollower from "@/app/[country]/[language]/components/MouseFollower";
+import PortalHeader from "@/app/[country]/[language]/components/PortalHeader";
 
 /**
  * Portal 组件的 Puck 配置
@@ -25,6 +26,19 @@ import MouseFollower from "@/app/[country]/[language]/components/MouseFollower";
  */
 export const portalComponents: Config["components"] = {
     // ==================== 页面布局组件 ====================
+
+    /**
+     * Portal 导航栏组件
+     * 固定在顶部的导航栏
+     */
+    PortalHeaderBlock: {
+        label: "🧭 导航栏",
+        fields: {},
+        defaultProps: {},
+        render: () => {
+            return <PortalHeader />;
+        },
+    },
 
     /**
      * Portal 页面容器

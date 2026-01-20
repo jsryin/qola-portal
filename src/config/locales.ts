@@ -3,9 +3,9 @@
  */
 export const COUNTRIES = [
     { code: 'glo', name: 'Global', flag: '🌍' },
-    { code: 'ae', name: 'United Arab Emirates', flag: '��' },
+    { code: 'ae', name: 'United Arab Emirates', flag: '🇦🇪' },
     { code: 'iq', name: 'Iraq', flag: '🇮🇶' },
-    { code: 'us', name: 'United States', flag: '��' },
+    { code: 'us', name: 'United States', flag: '🇺🇸' },
 ] as const;
 
 /**

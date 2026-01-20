@@ -107,7 +107,9 @@ export default function PagesList() {
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
           <thead className="bg-gray-50 dark:bg-muted/50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">标题 / 标识</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">标题</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">标识 (Slug)</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">国家</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">状态</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">版本</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">最后更新</th>
@@ -117,13 +119,13 @@ export default function PagesList() {
           <tbody className="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-gray-800">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                   加载中...
                 </td>
               </tr>
             ) : pages.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                   暂无页面
                 </td>
               </tr>
@@ -131,10 +133,13 @@ export default function PagesList() {
               pages.map((p) => (
                 <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{p.title || "无标题"}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{p.slug}</span>
-                    </div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{p.title || "无标题"}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{p.slug}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-900 dark:text-gray-100 uppercase">{p.country_code || "GLO"}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -153,7 +158,7 @@ export default function PagesList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link 
-                      href={`/admin/puck?slug=${p.slug}`}
+                      href={`/admin/puck?slug=${p.slug}&country=${p.country_code || 'glo'}`}
                       className="text-primary hover:text-primary/80 mr-4"
                     >
                       编辑
