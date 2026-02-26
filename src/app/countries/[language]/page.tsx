@@ -54,7 +54,7 @@ export default async function RegionsPage({
             <div className="border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between">
-                        <Link href="/" className="inline-block transition-transform duration-200 hover:scale-105 active:scale-95">
+                        <div className="inline-block">
                             <Image
                                 src="/logo-ctr.png"
                                 alt="Logo"
@@ -63,7 +63,7 @@ export default async function RegionsPage({
                                 className="h-[40px] w-auto mix-blend-multiply"
                                 priority
                             />
-                        </Link>
+                        </div>
                         <LanguageSwitcher currentLang={language} label={t('selectLanguage')} />
                     </div>
                 </div>

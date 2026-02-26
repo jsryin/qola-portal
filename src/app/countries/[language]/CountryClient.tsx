@@ -53,11 +53,12 @@ export default function CountryClient({
             {/* 核心功能区：网格渲染地区卡片列表 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto px-1">
                 {filteredRegions.map((country, index) => (
-                    <div
+                    <Link
                         key={country.id}
+                        href={`/${country.id}/${currentLanguage}`}
                         style={{ animationDelay: `${index * 50}ms` }}
                         className={cn(
-                            "group relative overflow-hidden h-full",
+                            "group block relative overflow-hidden h-full",
                             "bg-background/70 backdrop-blur-md border border-border/60 rounded-2xl",
                             "shadow-lg hover:shadow-2xl transition-all duration-500",
                             "hover:border-primary/40 hover:-translate-y-2",
@@ -105,7 +106,7 @@ export default function CountryClient({
 
                         {/* 背景微装饰 */}
                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors duration-500" />
-                    </div>
+                    </Link>
                 ))}
             </div>
 
