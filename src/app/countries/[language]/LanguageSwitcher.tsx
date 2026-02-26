@@ -37,7 +37,7 @@ export default function LanguageSwitcher({ currentLang, label }: { currentLang: 
             >
                 <Globe className={`w-4 h-4 transition-colors duration-300 ${isOpen ? "text-primary" : "text-muted-foreground group-hover:text-primary"
                     }`} />
-                <span className={`text-sm tracking-wide font-medium transition-colors duration-300 ${isOpen ? "text-primary" : "text-foreground group-hover:text-primary"
+                <span className={`text-sm tracking-wide transition-colors duration-300 ${isOpen ? "text-primary" : "text-foreground group-hover:text-primary"
                     }`}>
                     {currentLanguageName}
                 </span>
@@ -49,7 +49,7 @@ export default function LanguageSwitcher({ currentLang, label }: { currentLang: 
                 <div className="absolute right-0 mt-3 w-48 py-2 bg-background border border-border/60 rounded-2xl shadow-2xl z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                     <div className="px-4 py-3 mb-1 border-b border-border/30 flex items-center space-x-2">
                         <Globe className="w-4 h-4 text-primary opacity-90" />
-                        <span className="text-xs font-semibold text-foreground uppercase tracking-widest opacity-90">
+                        <span className="text-xs text-foreground uppercase tracking-widest opacity-90">
                             {label}
                         </span>
                     </div>

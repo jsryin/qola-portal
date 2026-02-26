@@ -1,0 +1,26 @@
+{
+    "Countries": {
+        "title": "Choose your country or region",
+        "subtitle": "Please select your region below to discover local services and products.",
+        "choose": "Select",
+        "searchPlaceholder": "Search countries or regions...",
+        "noResults": "No countries found",
+        "noResultsDetail": "Please try searching with different keywords.",
+        "clearSearch": "Clear Search",
+        "footerText": "Select your country to continue to the localized version of our website.",
+        "poweredBy": "Powered by",
+        "selectLanguage": "Select Language"
+    },
+    "Regions": {
+        "us": "United States",
+        "ae": "United Arab Emirates",
+        "my": "Malaysia",
+        "iq": "Iraq",
+        "it": "Italy",
+        "th": "Thailand",
+        "za": "South Africa",
+        "id": "Indonesia",
+        "mo": "Macau",
+        "mx": "Mexico"
+    }
+}
