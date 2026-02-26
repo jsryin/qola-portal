@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   // output: "export", // 已注释以支持后端部署
@@ -10,7 +13,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-trailingSlash: false, // 明确不使用尾随斜杠，有助于 Cloudflare 匹配路由
+  trailingSlash: false, // 明确不使用尾随斜杠，有助于 Cloudflare 匹配路由
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
