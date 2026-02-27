@@ -1,0 +1,127 @@
+/**
+ * Puck 组件自定义样式
+ */
+
+/* 标题组件 */
+.puck-heading {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+h1.puck-heading {
+  font-size: 2.5rem;
+}
+
+h2.puck-heading {
+  font-size: 2rem;
+}
+
+h3.puck-heading {
+  font-size: 1.5rem;
+}
+
+/* 段落组件 */
+.puck-paragraph {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+/* 图片组件 */
+.puck-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.puck-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background-color: #f0f0f0;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  color: #666;
+}
+
+/* 按钮组件 */
+.puck-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.puck-button--primary {
+  background-color: #0070f3;
+  color: #fff;
+}
+
+.puck-button--primary:hover {
+  background-color: #0060df;
+}
+
+.puck-button--secondary {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.puck-button--secondary:hover {
+  background-color: #5a6268;
+}
+
+.puck-button--outline {
+  background-color: transparent;
+  border: 2px solid #0070f3;
+  color: #0070f3;
+}
+
+.puck-button--outline:hover {
+  background-color: #0070f3;
+  color: #fff;
+}
+
+/* 容器组件 */
+.puck-container {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.puck-container--padding-none {
+  padding: 0;
+}
+
+.puck-container--padding-small {
+  padding: 1rem;
+}
+
+.puck-container--padding-medium {
+  padding: 2rem;
+}
+
+.puck-container--padding-large {
+  padding: 4rem;
+}
+
+.puck-container--width-full {
+  max-width: 100%;
+}
+
+.puck-container--width-lg {
+  max-width: 1200px;
+}
+
+.puck-container--width-md {
+  max-width: 960px;
+}
+
+.puck-container--width-sm {
+  max-width: 720px;
+}

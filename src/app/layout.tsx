@@ -4,12 +4,15 @@ import { cn, getAssetPath } from "@/lib/utils";
 import { montserrat } from "./fonts/fonts";
 
 export const metadata: Metadata = {
+
   title: "QOLA｜QOLA Mall",
   description: "QOLA",
   icons: {
     icon: { url: getAssetPath("/logo-100x100.webp"), type: "image/webp" },
   },
 };
+
+import { ToastProvider } from "@/components/ui/Toast";
 
 export default function RootLayout({
   children,
@@ -19,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" className={montserrat.variable}>
       <body className={cn(montserrat.className, "antialiased bg-background text-foreground min-h-screen")}>
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

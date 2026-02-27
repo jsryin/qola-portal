@@ -17,7 +17,12 @@ import PortalPageTransition from "./components/PortalPageTransition";
 import PortalUserGuide from "./components/PortalUserGuide";
 import PortalFooter from "./components/PortalFooter";
 
-export default function ClientPortal({ locale }: { locale: string }) {
+interface ClientPortalProps {
+  country: string;
+  language: string;
+}
+
+export default function ClientPortal({ country, language }: ClientPortalProps) {
   return (
     <div className="relative bg-stone-900 min-h-screen">
       {/* Mouse Follower - Global in this page */}

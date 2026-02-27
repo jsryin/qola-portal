@@ -89,9 +89,11 @@ const PhoneIcon = () => (
 export default function ContactPage({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ country: string; language: string }>;
 }) {
-  const { locale } = use(params);
+  const { country, language } = use(params);
+  // 基于 country 和 language 生成基础路径
+  const basePath = `/${country}/${language}`;
 
   return (
     <div className="relative bg-white min-h-screen text-stone-900 font-sans">
@@ -107,7 +109,7 @@ export default function ContactPage({
             If you have questions, check out our
           </span>
           <a
-            href={`/${locale}#faq`}
+            href={`${basePath}#faq`}
             className="text-[#E6B375] hover:text-[#d4a060] transition-colors flex items-center gap-1"
           >
             Frequently asked questions <span aria-hidden="true">&rarr;</span>
