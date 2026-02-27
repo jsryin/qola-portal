@@ -5,6 +5,8 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { getTranslations, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 
+export const runtime = 'edge';
+
 export default async function RegionsPage({
     params,
 }: {
