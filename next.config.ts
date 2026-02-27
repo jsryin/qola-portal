@@ -10,10 +10,17 @@ const nextConfig: NextConfig = {
   //您可以在 GitHub Actions 中设置环境变量 NEXT_PUBLIC_BASE_PATH
   basePath: "",
   reactStrictMode: true,
+  serverExternalPackages: ["mysql2"],
   images: {
     unoptimized: true,
   },
-  trailingSlash: false, // 明确不使用尾随斜杠，有助于 Cloudflare 匹配路由
+  trailingSlash: false,
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push("mysql2");
+    }
+    return config;
+  },
 };
 
 export default withNextIntl(nextConfig);

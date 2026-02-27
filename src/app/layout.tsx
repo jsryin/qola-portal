@@ -4,6 +4,7 @@ import { cn, getAssetPath } from "@/lib/utils";
 import { montserrat } from "./fonts/fonts";
 
 export const metadata: Metadata = {
+
   title: "QOLA｜QOLA Mall",
   description: "QOLA",
   icons: {

@@ -1,3 +1,5 @@
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from 'next/server';
 import { CmsHelper } from '@/lib/cms-helper';
 import { isPuckData } from '@/types/puck';
