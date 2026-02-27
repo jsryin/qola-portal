@@ -42,8 +42,17 @@ export function middleware(request: NextRequest) {
 
         // 如果路径还没有带有国家前缀，添加上该前缀
         if (!url.pathname.startsWith(`/${subdomain}`)) {
-            url.pathname = `/${subdomain}${url.pathname === '/' ? '' : url.pathname}`;
-            return NextResponse.rewrite(url);
+            // Next-on-Pages 可能会在重写时进入死循环，如果是这样我们从 header 判断是否已经重写过
+            if (request.headers.get('x-rewritten-subdomain') === subdomain) {
+                return NextResponse.next();
+            }
+
+            const rewrittenPath = `/${subdomain}${url.pathname === '/' ? '' : url.pathname}`;
+            url.pathname = rewrittenPath;
+
+            const response = NextResponse.rewrite(url);
+            response.headers.set('x-rewritten-subdomain', subdomain);
+            return response;
         }
     }
 
