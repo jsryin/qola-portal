@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -22,6 +22,7 @@ const SOCIAL_LINKS = [
 
 export default function PortalFooter() {
   const params = useParams();
+  const router = useRouter();
   // 获取 country 和 language 参数，设置默认值
   const rawCountry = params?.country;
   const rawLanguage = params?.language;
@@ -29,7 +30,7 @@ export default function PortalFooter() {
   const language = (Array.isArray(rawLanguage) ? rawLanguage[0] : rawLanguage) || 'en';
   // 基于 country 和 language 生成基础路径
   const basePath = `/${country}/${language}`;
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const impactfulTextRef = useRef<HTMLHeadingElement>(null);
   const wavyRef = useRef<HTMLDivElement>(null);
@@ -48,7 +49,7 @@ export default function PortalFooter() {
     }
     setSubStatus("loading");
     setSubMsg("");
-    
+
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
@@ -113,7 +114,7 @@ export default function PortalFooter() {
       const footerChars = visionRef.current?.querySelectorAll('span');
       if (footerChars) {
         const targets = [...Array.from(footerChars), iconCRef.current];
-        gsap.fromTo(targets, 
+        gsap.fromTo(targets,
           { rotateY: 0 },
           {
             rotateY: 360,
@@ -227,14 +228,23 @@ export default function PortalFooter() {
             <ul className="flex flex-col gap-y-1 group/nav">
               {NAV_LINKS.map((item, index) => {
                 const isDisabled = ['Products', 'Shop'].includes(item);
+                const isProducts = item === 'Products';
                 return (
                   <li key={item}>
-                    <Link 
-                      href={isDisabled ? '#' : (item === 'Home' ? basePath : `${basePath}/${item.toLowerCase()}`)} 
-                      onClick={isDisabled ? (e) => e.preventDefault() : undefined}
-                      className={`text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter transition-colors inline-block 
-                        ${index === 0 
-                          ? 'text-white group-hover/nav:text-gray-500 hover:!text-white' 
+                    <Link
+                      href={isDisabled ? '#' : (item === 'Home' ? basePath : `${basePath}/${item.toLowerCase()}`)}
+                      onClick={isProducts ? (e) => {
+                        e.preventDefault();
+                        const el = document.getElementById("portal-flavors");
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                          router.push(`${basePath}#portal-flavors`);
+                        }
+                      } : isDisabled ? (e) => e.preventDefault() : undefined}
+                      className={`text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter transition-colors inline-block
+                        ${index === 0
+                          ? 'text-white group-hover/nav:text-gray-500 hover:!text-white'
                           : 'text-gray-500 hover:text-white'}`}
                     >
                       {item}
@@ -265,9 +275,9 @@ export default function PortalFooter() {
               <h3 className="text-xs text-gray-500 mb-8 font-semibold tracking-widest uppercase">( Stay Connected )</h3>
               <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] md:text-xs font-bold">
                 {SOCIAL_LINKS.map((item) => (
-                  <Link 
-                    key={item.name} 
-                    href={item.href} 
+                  <Link
+                    key={item.name}
+                    href={item.href}
                     target="_blank"
                     className="relative text-gray-400 hover:text-white transition-colors py-0.5 group"
                     onMouseEnter={(e) => handleSocialHover(e, true)}
@@ -286,8 +296,8 @@ export default function PortalFooter() {
                 If you have any questions about the guide, please contact us, and we will assign a representative to assist you.
               </p>
               <div className="relative mt-8">
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   id="footer-email"
                   placeholder=" "
                   value={email}
@@ -296,7 +306,7 @@ export default function PortalFooter() {
                   className="peer w-full bg-transparent border-b border-gray-700 py-4 pr-12 text-sm focus:border-white outline-none transition-all placeholder:opacity-0 disabled:opacity-50"
                   disabled={subStatus === 'loading' || subStatus === 'success'}
                 />
-                <label 
+                <label
                   htmlFor="footer-email"
                   className="absolute left-0 top-4 text-gray-600 text-sm transition-all duration-300 pointer-events-none
                     peer-focus:-translate-y-7 peer-focus:text-xs peer-focus:text-white
@@ -304,10 +314,10 @@ export default function PortalFooter() {
                 >
                   Your email <span className="text-red-600 font-bold">*</span>
                 </label>
-                <button 
+                <button
                   onClick={handleSubscribe}
                   disabled={subStatus === 'loading' || subStatus === 'success'}
-                  className="absolute right-0 bottom-3 p-2 rounded-full border border-gray-700 hover:border-white hover:bg-white hover:text-black transition-all group/btn overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed" 
+                  className="absolute right-0 bottom-3 p-2 rounded-full border border-gray-700 hover:border-white hover:bg-white hover:text-black transition-all group/btn overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Subscribe"
                 >
                   <div className="relative w-4 h-4 flex items-center justify-center">
@@ -322,17 +332,17 @@ export default function PortalFooter() {
                       </svg>
                     ) : (
                       <>
-                        <svg 
+                        <svg
                           className="absolute inset-0 transition-transform duration-500 ease-in-out group-hover/btn:translate-x-8 -translate-x-0"
                           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                         >
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                          <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
-                        <svg 
+                        <svg
                           className="absolute inset-0 transition-transform duration-500 ease-in-out -translate-x-8 group-hover/btn:translate-x-0"
                           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                         >
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                          <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
                       </>
                     )}
@@ -357,13 +367,13 @@ export default function PortalFooter() {
             <div>© VitanicVision</div>
           </div>
           <div className="relative flex items-end justify-center gap-12">
-            <h1 
+            <h1
               ref={visionRef}
               className="text-[12vw] font-medium tracking-tighter text-black select-none leading-[0.8] flex overflow-hidden lg:opacity-100"
             >
               {"Vitanic Vision".split("").map((char, i) => (
-                <span 
-                  key={i} 
+                <span
+                  key={i}
                   className="inline-block min-w-[0.2em] transform-gpu"
                   onMouseEnter={handleCharHover}
                 >
@@ -371,7 +381,7 @@ export default function PortalFooter() {
                 </span>
               ))}
             </h1>
-            <div 
+            <div
               ref={iconCRef}
               className="text-xl md:text-2xl text-black border-[1px] md:border-2 border-black rounded-full w-8 h-8 md:w-12 md:h-12 flex items-center justify-center font-bold mb-[1.5vw] cursor-pointer"
               onMouseEnter={(e) => {

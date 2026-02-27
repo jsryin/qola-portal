@@ -23,9 +23,8 @@ const FLAVOR_DATA = [
 // Memoized Image Component
 const FlavorImage = memo(({ image, name, isActive }: { image: string, name: string, isActive: boolean }) => (
   <div
-    className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out ${
-      isActive ? "opacity-100" : "opacity-0"
-    }`}
+    className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out ${isActive ? "opacity-100" : "opacity-0"
+      }`}
   >
     <Image
       src={image}
@@ -40,30 +39,30 @@ const FlavorImage = memo(({ image, name, isActive }: { image: string, name: stri
 FlavorImage.displayName = "FlavorImage";
 
 // Memoized Link Component
-const FlavorLink = memo(({ 
-  name, 
-  index, 
-  isHovered, 
-  isDimmed, 
-  onEnter, 
-  onLeave 
-}: { 
-  name: string, 
-  index: number, 
-  isHovered: boolean, 
-  isDimmed: boolean, 
-  onEnter: (index: number) => void, 
-  onLeave: () => void 
+const FlavorLink = memo(({
+  name,
+  index,
+  isHovered,
+  isDimmed,
+  onEnter,
+  onLeave
+}: {
+  name: string,
+  index: number,
+  isHovered: boolean,
+  isDimmed: boolean,
+  onEnter: (index: number) => void,
+  onLeave: () => void
 }) => (
   <a
     href="#"
     data-cursor-ignore
     className={`text-xl sm:text-2xl md:text-2xl lg:text-5xl font-bold tracking-tight uppercase transition-all duration-300 border-l-4 border-transparent ease-in-out whitespace-nowrap w-full py-1 
-      text-center lg:text-left lg:pl-[20%] ${
-      isDimmed ? "text-gray-400 opacity-40 scale-[0.98]" : "text-black scale-100"
-    }`}
+      text-center lg:text-left lg:pl-[20%] ${isDimmed ? "text-gray-400 opacity-40 scale-[0.98]" : "text-black scale-100"
+      }`}
     onMouseEnter={() => onEnter(index)}
     onMouseLeave={onLeave}
+    onClick={(e) => e.preventDefault()}
   >
     {name}
   </a>
@@ -85,7 +84,7 @@ export default function PortalFlavors() {
       if (containerRef.current) {
         // Initialize position centering
         gsap.set(containerRef.current, { xPercent: -50, yPercent: -50 });
-        
+
         // Create quickSetters for high-performance updates
         xSetter.current = gsap.quickSetter(containerRef.current, "x", "px");
         ySetter.current = gsap.quickSetter(containerRef.current, "y", "px");
@@ -130,7 +129,7 @@ export default function PortalFlavors() {
 
   const handleFlavorEnter = useCallback((index: number) => {
     setHoveredIndex(index);
-    
+
     if (contentRef.current) {
       gsap.killTweensOf(contentRef.current);
       gsap.to(contentRef.current, {
@@ -156,7 +155,8 @@ export default function PortalFlavors() {
   }, []);
 
   return (
-    <section 
+    <section
+      id="portal-flavors"
       className="relative w-full min-h-screen bg-[#ecebe9] py-12 md:py-20 px-6 md:px-12 flex flex-col justify-between font-sans text-black overflow-hidden"
       onMouseMove={handleMouseMove}
     >
@@ -165,16 +165,16 @@ export default function PortalFlavors() {
         ref={containerRef}
         className="pointer-events-none fixed top-0 left-0 w-64 h-64 md:w-[500px] md:h-[500px] z-50 select-none will-change-transform"
       >
-        <div 
+        <div
           ref={contentRef}
           className="w-full h-full opacity-0 scale-50"
         >
           {FLAVOR_DATA.map((flavor, index) => (
-            <FlavorImage 
-              key={index} 
-              image={flavor.image} 
-              name={flavor.name} 
-              isActive={hoveredIndex === index} 
+            <FlavorImage
+              key={index}
+              image={flavor.image}
+              name={flavor.name}
+              isActive={hoveredIndex === index}
             />
           ))}
         </div>
@@ -223,7 +223,7 @@ export default function PortalFlavors() {
 
       {/* Bottom Button */}
       <div className="flex justify-center mt-12 z-10">
-        <PremiumButton 
+        <PremiumButton
           text="Check The Details"
           size="md"
         />

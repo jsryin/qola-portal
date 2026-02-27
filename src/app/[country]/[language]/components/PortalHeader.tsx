@@ -2,7 +2,7 @@
 
 import { useState, memo, useCallback } from "react";
 import Link from 'next/link';
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { getAssetPath } from "@/lib/utils";
 
@@ -45,7 +45,8 @@ const handleDisabledClick = (e: React.MouseEvent) => {
 export default function PortalHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const params = useParams();
-  
+  const router = useRouter();
+
   // 获取 country 和 language 参数，设置默认值
   const rawCountry = params?.country;
   const rawLanguage = params?.language;
@@ -54,6 +55,17 @@ export default function PortalHeader() {
 
   // 基于 country 和 language 动态生成链接
   const basePath = `/${country}/${language}`;
+
+  const handleScrollToProducts = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById("portal-flavors");
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      router.push(`${basePath}#portal-flavors`);
+    }
+  }, [basePath, router]);
+
   const navLinks = NAV_ITEMS.map(item => ({
     label: item.label,
     href: DISABLED_ITEMS.includes(item.label) ? '#' : (item.label === 'Home' ? basePath : `${basePath}/${item.path}`)
@@ -65,11 +77,24 @@ export default function PortalHeader() {
   const toggleMenu = useCallback(() => setIsMenuOpen(prev => !prev), []);
 
   const handleOverlayLinkClick = (e: React.MouseEvent, label: string) => {
-     if (DISABLED_ITEMS.includes(label)) {
-        e.preventDefault();
-        return;
-     }
-     setIsMenuOpen(false);
+    if (label === 'Products') {
+      e.preventDefault();
+      setIsMenuOpen(false);
+      setTimeout(() => {
+        const el = document.getElementById("portal-flavors");
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          router.push(`${basePath}#portal-flavors`);
+        }
+      }, 300);
+      return;
+    }
+    if (DISABLED_ITEMS.includes(label)) {
+      e.preventDefault();
+      return;
+    }
+    setIsMenuOpen(false);
   };
 
   return (
@@ -77,10 +102,10 @@ export default function PortalHeader() {
       {/* Logo Layer - Keeps Logo Natural Color (No Mix Blend) */}
       <header className="fixed top-0 left-0 right-0 py-4 px-4 md:px-8 flex justify-between items-center z-[71] pointer-events-none">
         <div className="relative w-16 h-7 md:w-24 md:h-7 flex items-center pointer-events-auto">
-          <Image 
-            src={getAssetPath("/left-top-logo2.webp")} 
-            alt="Qola Logo" 
-            fill 
+          <Image
+            src={getAssetPath("/left-top-logo2.webp")}
+            alt="Qola Logo"
+            fill
             className="object-contain object-left"
             priority
           />
@@ -97,10 +122,10 @@ export default function PortalHeader() {
         {/* 桌面端导航 */}
         <nav className={`hidden md:flex gap-10 text-sm tracking-[0.2em] uppercase font-medium items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 ${isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           {navLinks.map((link) => (
-            <NavLink 
-              key={link.label} 
-              {...link} 
-              onClick={DISABLED_ITEMS.includes(link.label) ? handleDisabledClick : undefined}
+            <NavLink
+              key={link.label}
+              {...link}
+              onClick={link.label === 'Products' ? handleScrollToProducts : DISABLED_ITEMS.includes(link.label) ? handleDisabledClick : undefined}
             />
           ))}
         </nav>
@@ -109,10 +134,10 @@ export default function PortalHeader() {
         {/* 移动端快捷导航 */}
         <nav className={`flex md:hidden gap-5 text-sm uppercase tracking-[0.2em] font-medium items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 ${isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           {mobileNavLinks.map((link) => (
-            <NavLink 
-              key={link.label} 
-              {...link} 
-              onClick={DISABLED_ITEMS.includes(link.label) ? handleDisabledClick : undefined}
+            <NavLink
+              key={link.label}
+              {...link}
+              onClick={link.label === 'Products' ? handleScrollToProducts : DISABLED_ITEMS.includes(link.label) ? handleDisabledClick : undefined}
             />
           ))}
         </nav>
@@ -130,24 +155,23 @@ export default function PortalHeader() {
       </header>
 
       {/* 全屏菜单遮罩层 - 实现圆形展开效果 */}
-      <div 
-        className={`fixed inset-0 bg-stone-900 z-[60] flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.77,0,0.175,1)] ${
-          isMenuOpen 
-            ? 'opacity-100 visible' 
-            : 'opacity-0 invisible pointer-events-none'
-        }`}
+      <div
+        className={`fixed inset-0 bg-stone-900 z-[60] flex flex-col items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.77,0,0.175,1)] ${isMenuOpen
+          ? 'opacity-100 visible'
+          : 'opacity-0 invisible pointer-events-none'
+          }`}
         style={{
-          clipPath: isMenuOpen 
-            ? 'circle(150% at calc(100% - 40px) 40px)' 
+          clipPath: isMenuOpen
+            ? 'circle(150% at calc(100% - 40px) 40px)'
             : 'circle(0% at calc(100% - 40px) 40px)',
         }}
       >
         <nav className={`flex flex-col items-center gap-8 text-3xl md:text-5xl text-[#FAF7F2] [perspective:1000px] transition-all duration-500 delay-300 ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {navLinks.map((link) => (
-            <Link 
+            <Link
               key={link.label}
-              href={link.href} 
-              className="relative group py-2" 
+              href={link.href}
+              className="relative group py-2"
               onClick={(e) => handleOverlayLinkClick(e, link.label)}
             >
               {link.label}
