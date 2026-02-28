@@ -1,12 +1,18 @@
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
-import { COUNTRY_LANGUAGES, COUNTRIES } from '@/config/locales';
+import { COUNTRY_LANGUAGES, COUNTRIES, DEFAULT_COUNTRY, DEFAULT_LANGUAGE } from '@/config/locales';
 
-// 使用 edge runtime 以兼容 Cloudflare Pages
-export const runtime = 'edge';
+export const dynamicParams = false;
 
-// 允许所有 language 参数动态处理
-export const dynamicParams = true;
+export function generateStaticParams({ params }: { params: { country: string } }) {
+  const { country } = params;
+  const languages =
+    country === DEFAULT_COUNTRY
+      ? [DEFAULT_LANGUAGE]
+      : COUNTRY_LANGUAGES[country] || [DEFAULT_LANGUAGE];
+
+  return languages.map((language) => ({ language }));
+}
 
 type Props = {
   children: ReactNode;

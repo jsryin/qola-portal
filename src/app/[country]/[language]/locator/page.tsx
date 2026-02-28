@@ -4,6 +4,8 @@ import PortalFooter from "../components/PortalFooter";
 import MouseFollower from "../components/MouseFollower";
 import PortalStoreLocator from "../components/PortalStoreLocator";
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
   title: "Store Locator - QOLA",
   description: "Find a QOLA store near you.",

@@ -5,6 +5,8 @@ import PortalFooter from "../components/PortalFooter";
 import MouseFollower from "../components/MouseFollower";
 import ContactLink from "../components/ContactLink";
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
   title: "Contact Us - QOLA",
   description: "Get in touch with our team via email or phone.",

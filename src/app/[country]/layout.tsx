@@ -1,10 +1,14 @@
 import { ReactNode } from 'react';
+import { COUNTRY_LANGUAGES, DEFAULT_COUNTRY } from '@/config/locales';
 
-// 使用 edge runtime 以兼容 Cloudflare Pages
-export const runtime = 'edge';
+export const dynamicParams = false;
 
-// 允许所有 country 参数动态处理
-export const dynamicParams = true;
+export function generateStaticParams() {
+  const countries = new Set<string>(Object.keys(COUNTRY_LANGUAGES));
+  countries.add(DEFAULT_COUNTRY);
+
+  return Array.from(countries).map((country) => ({ country }));
+}
 
 export default function CountryLayout({
   children,
