@@ -4,6 +4,7 @@ import CountryClient from "./CountryClient";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { getTranslations, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import { COUNTRIES, COUNTRY_LANGUAGES } from "@/config/locales";
 
 export const runtime = 'edge';
 
@@ -27,19 +28,16 @@ export default async function RegionsPage({
     // 获取所有消息以供客户端组件使用
     const messages = await getMessages({ locale: language });
 
-    // 2. 模拟的国家/地区配置数据
-    const staticRegions = [
-        { id: "us", flag: "🇺🇸", codes: ["EN"] },
-        { id: "ae", flag: "🇦🇪", codes: ["EN", "AR"] },
-        { id: "my", flag: "🇲🇾", codes: ["EN"] },
-        { id: "iq", flag: "🇮🇶", codes: ["EN", "AR"] },
-        { id: "it", flag: "🇮🇹", codes: ["EN"] },
-        { id: "th", flag: "🇹🇭", codes: ["EN"] },
-        { id: "za", flag: "🇿🇦", codes: ["EN"] },
-        { id: "id", flag: "🇮🇩", codes: ["EN"] },
-        { id: "mo", flag: "🇲🇴", codes: ["EN"] },
-        { id: "mx", flag: "🇲🇽", codes: ["EN"] },
-    ];
+    // 2. 从 locales.ts 配置中动态获取并转换国家/地区配置数据
+    // 过滤掉 'glo'（Global），只显示具体国家
+    const staticRegions = COUNTRIES.filter(c => (c.code as string) !== 'glo').map(country => {
+        const supportedCodes = COUNTRY_LANGUAGES[country.code] || ['en'];
+        return {
+            id: country.code,
+            flag: country.flag,
+            codes: supportedCodes.map(code => code.toUpperCase()) // 将 ['en', 'ar'] 转换为 ['EN', 'AR']
+        };
+    });
 
     const regions = staticRegions.map(r => ({
         ...r,

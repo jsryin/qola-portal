@@ -2,10 +2,16 @@
  * 国家配置
  */
 export const COUNTRIES = [
-    { code: 'glo', name: 'Global', flag: '🌍' },
-    { code: 'ae', name: 'United Arab Emirates', flag: '🇦🇪' },
-    { code: 'iq', name: 'Iraq', flag: '🇮🇶' },
     { code: 'us', name: 'United States', flag: '🇺🇸' },
+    { code: 'ae', name: 'United Arab Emirates', flag: '🇦🇪' },
+    { code: 'my', name: 'Malaysia', flag: '🇲🇾' },
+    { code: 'iq', name: 'Iraq', flag: '🇮🇶' },
+    { code: 'it', name: 'Italy', flag: '🇮🇹' },
+    { code: 'th', name: 'Thailand', flag: '🇹🇭' },
+    { code: 'za', name: 'South Africa', flag: '🇿🇦' },
+    { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
+    { code: 'mo', name: 'Macau', flag: '🇲🇴' },
+    { code: 'mx', name: 'Mexico', flag: '🇲🇽' },
 ] as const;
 
 /**
@@ -20,10 +26,16 @@ export const LANGUAGES = [
  * 国家与支持语言的映射关系
  */
 export const COUNTRY_LANGUAGES: Record<string, string[]> = {
-    glo: ['en', 'ar'],        // Global 支持所有
-    ae: ['en', 'ar'],               // 阿联酋：英语优先，支持阿拉伯语
-    iq: ['en', 'ar'],               // 伊拉克：英语优先，支持阿拉伯语
     us: ['en'],                     // 美国：仅英语
+    ae: ['en', 'ar'],               // 阿联酋：英语优先，支持阿拉伯语
+    my: ['en'],                     // 马来西亚：仅英语
+    iq: ['en', 'ar'],               // 伊拉克：英语优先，支持阿拉伯语
+    it: ['en'],                     // 意大利：仅英语
+    th: ['en'],                     // 泰国：仅英语
+    za: ['en'],                     // 南非：仅英语
+    id: ['en'],                     // 印尼：仅英语
+    mo: ['en'],                     // 澳门：仅英语
+    mx: ['en'],                     // 墨西哥：仅英语
 };
 
 /**

@@ -44,7 +44,9 @@ export function middleware(request: NextRequest) {
         if (!url.pathname.startsWith(`/${subdomain}`)) {
             // Next-on-Pages 可能会在重写时进入死循环，如果是这样我们从 header 判断是否已经重写过
             if (request.headers.get('x-rewritten-subdomain') === subdomain) {
-                return NextResponse.next();
+                const response = NextResponse.next();
+                response.headers.set('x-pathname', url.pathname);
+                return response;
             }
 
             const rewrittenPath = `/${subdomain}${url.pathname === '/' ? '' : url.pathname}`;
@@ -52,11 +54,18 @@ export function middleware(request: NextRequest) {
 
             const response = NextResponse.rewrite(url);
             response.headers.set('x-rewritten-subdomain', subdomain);
+            response.headers.set('x-pathname', rewrittenPath);
+            return response;
+        } else {
+            const response = NextResponse.next();
+            response.headers.set('x-pathname', url.pathname);
             return response;
         }
     }
 
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set('x-pathname', url.pathname);
+    return response;
 }
 
 export const config = {
